@@ -43,6 +43,7 @@ func GetConfig() *Config {
 		if err := env.Parse(config); err != nil {
 			logrus.Fatalf("Failed to parse config: %v", err)
 		}
+		logrus.Infof("Config: %+v", config)
 	})
 	return config
 }

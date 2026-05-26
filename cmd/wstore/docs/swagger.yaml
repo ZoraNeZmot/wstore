@@ -1,0 +1,13 @@
+host: localhost:8080
+info:
+  contact:
+    email: kureichukns@gmail.com
+    name: API Supports
+  description: WStore API
+  license:
+    name: Apache 2.0
+    url: license.txt
+  title: WStore API
+  version: "1.0"
+paths: {}
+swagger: "2.0"
