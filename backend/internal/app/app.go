@@ -37,18 +37,14 @@ func New() *App {
 }
 
 func (a *App) Init() error {
-	logrus.Debugf("Initializing app with config: %+v", a.Config)
 	a.cleanupFuncs = append(a.cleanupFuncs, log.Init())
+	logrus.Tracef("Initializing app with config: %v", a.Config)
+	logrus.Infof("Current log level: %v", logrus.GetLevel())
 	ctx, ctxStop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	a.ctxStop = ctxStop
 	go a.waitForShutdown(ctx)
 
-	serviceHandlers := handlers.NewServiceHandlers()
-	if err := a.registerHandlers(serviceHandlers); err != nil {
-		return err
-	}
-	userHandlers := handlers.NewUserHandlers()
-	if err := a.registerHandlers(userHandlers); err != nil {
+	if err := handlers.RegisterRoutes(a.Server.Handler.(*http.ServeMux)); err != nil {
 		return err
 	}
 
@@ -87,7 +83,9 @@ func (a *App) waitForShutdown(ctx context.Context) {
 	logrus.Info("Shutting down...")
 	if err := a.Stop(); err != nil {
 		logrus.WithError(err).Errorf("Failed to stop app")
+		os.Exit(1)
 	}
+	os.Exit(0)
 }
 
 func (a *App) registerHandlers(handlers handlers.Handlers) error {

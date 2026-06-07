@@ -5,6 +5,7 @@
 *.so
 *.dylib
 bin
+dist
 
 # Test binary, built with `go test -c`
 *.test
@@ -18,6 +19,7 @@ profile.cov
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+node_modules/
 
 # Go workspace file
 go.work
@@ -29,3 +31,4 @@ go.work.sum
 # Editor/IDE
 # .idea/
 .vscode/
+.cursor/

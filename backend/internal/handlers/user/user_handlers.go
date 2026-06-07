@@ -1,6 +1,9 @@
-package handlers
+package userhandlers
 
-import "net/http"
+import (
+	"net/http"
+	handlershelp "wstore/internal/handlers/help"
+)
 
 type UserHandlers struct {
 	// TODO: Add DB and config
@@ -11,7 +14,7 @@ func NewUserHandlers() *UserHandlers {
 }
 
 func (u *UserHandlers) RegisterRoutes(mux *http.ServeMux) error {
-	mux.HandleFunc("/users", u.GetUsers)
+	mux.HandleFunc(handlershelp.GetFullPathAPI("users"), u.GetUsers)
 	return nil
 }
 
