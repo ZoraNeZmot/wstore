@@ -1,0 +1,24 @@
+host: localhost:8080
+info:
+  contact:
+    email: kureichukns@gmail.com
+    name: API Supports
+  description: WStore API
+  license:
+    name: Apache 2.0
+    url: license.txt
+  title: WStore API
+  version: "1.0"
+paths:
+  /health:
+    get:
+      description: Check if the server is running
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Health check
+      tags:
+      - service
+swagger: "2.0"

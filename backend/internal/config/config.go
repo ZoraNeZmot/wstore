@@ -1,11 +1,14 @@
 package config
 
 import (
+	"os"
 	"sync"
 
 	"github.com/caarlos0/env/v11"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 )
 
 type Config struct {
@@ -13,6 +16,8 @@ type Config struct {
 	LogConfig      LogConfig      `envPrefix:"LOG_"`
 	DatabaseConfig DatabaseConfig `envPrefix:"DATABASE_"`
 	ServerConfig   ServerConfig   `envPrefix:"SERVER_"`
+
+	GoogleOAuthConfig *oauth2.Config
 }
 
 type LogConfig struct {
@@ -40,6 +45,13 @@ var once sync.Once
 func GetConfig() *Config {
 	once.Do(func() {
 		config = &Config{}
+		config.GoogleOAuthConfig = &oauth2.Config{
+			ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
+			ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+			RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URI"),
+			Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
+			Endpoint:     google.Endpoint,
+		}
 		if err := env.Parse(config); err != nil {
 			logrus.Fatalf("Failed to parse config: %v", err)
 		}
