@@ -1,0 +1,26 @@
+.product-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.product-section__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+}
+
+.product-section__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--spacing-md);
+}
+
+@media (max-width: 480px) {
+  .product-section__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-sm);
+  }
+
+  .product-section__title {
+    font-size: 1.125rem;
+  }
+}

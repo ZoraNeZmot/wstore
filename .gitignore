@@ -25,6 +25,9 @@ node_modules/
 go.work
 go.work.sum
 
+#images files
+images/
+
 # env file
 .env
 
