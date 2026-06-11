@@ -17,7 +17,9 @@ import (
 //	@license.name	Apache 2.0
 //	@license.url	license.txt
 
-//	@host	localhost:8080
+//	@host		localhost:8443
+//	@schemes	https http
+//	@BasePath	/api
 
 func main() {
 	app := app.New()

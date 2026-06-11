@@ -5,14 +5,9 @@ import (
 )
 
 const (
-	BasePathAPI = "/api/v1"
-	BasePathWeb = "/"
+	BasePathAPI = "/api"
 )
 
 func GetFullPathAPI(relativePath string) string {
 	return path.Join(BasePathAPI, relativePath)
-}
-
-func GetFullPathWeb(relativePath string) string {
-	return path.Join(BasePathWeb, relativePath)
 }

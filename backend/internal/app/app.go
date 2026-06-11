@@ -30,16 +30,19 @@ func New() *App {
 	return &App{
 		Config: conf,
 		Server: &http.Server{
-			Addr:    net.JoinHostPort(conf.ServerConfig.Host, conf.ServerConfig.Port),
-			Handler: http.NewServeMux(),
+			Addr:      net.JoinHostPort(conf.ServerConfig.Host, conf.ServerConfig.Port),
+			Handler:   http.NewServeMux(),
+			TLSConfig: conf.ServerConfig.TLSConfig,
 		},
 	}
 }
 
 func (a *App) Init() error {
 	a.cleanupFuncs = append(a.cleanupFuncs, log.Init())
+
 	logrus.Tracef("Initializing app with config: %v", a.Config)
 	logrus.Infof("Current log level: %v", logrus.GetLevel())
+
 	ctx, ctxStop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	a.ctxStop = ctxStop
 	go a.waitForShutdown(ctx)
@@ -52,10 +55,17 @@ func (a *App) Init() error {
 }
 
 func (a *App) Run() error {
-	logrus.Infof("Starting server on %s", a.Server.Addr)
 	defer a.ctxStop()
-	if err := a.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		return err
+	if a.Server.TLSConfig != nil {
+		logrus.Infof("Starting server on %s with TLS", a.Server.Addr)
+		if err := a.Server.ListenAndServeTLS(a.Config.ServerConfig.CertFile, a.Config.ServerConfig.KeyFile); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return err
+		}
+	} else {
+		logrus.Infof("Starting server on %s without TLS", a.Server.Addr)
+		if err := a.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return err
+		}
 	}
 	return nil
 }

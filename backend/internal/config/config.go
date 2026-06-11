@@ -1,7 +1,7 @@
 package config
 
 import (
-	"os"
+	"crypto/tls"
 	"sync"
 
 	"github.com/caarlos0/env/v11"
@@ -12,12 +12,25 @@ import (
 )
 
 type Config struct {
-	DebugMode      bool           `env:"DEBUG_MODE" envDefault:"false"`
-	LogConfig      LogConfig      `envPrefix:"LOG_"`
-	DatabaseConfig DatabaseConfig `envPrefix:"DATABASE_"`
-	ServerConfig   ServerConfig   `envPrefix:"SERVER_"`
+	DebugMode         bool              `env:"DEBUG_MODE" envDefault:"false"`
+	LogConfig         LogConfig         `envPrefix:"LOG_"`
+	ServerConfig      ServerConfig      `envPrefix:"SERVER_"`
+	DatabaseConfig    DatabaseConfig    `envPrefix:"DATABASE_"`
+	GoogleOAuthConfig GoogleOAuthConfig `envPrefix:"GOOGLE_"`
+}
 
-	GoogleOAuthConfig *oauth2.Config
+// GoogleOAuthConfig - Google OAuth configuration
+//
+// Values are loaded from environment variables
+// RedirectURI is expanded from SERVER_METHOD, SERVER_HOST, SERVER_PORT
+// This variables should be set in the .env file BEFORE the GoogleOAuthConfig is parsed
+type GoogleOAuthConfig struct {
+	ClientID     string `env:"CLIENT_ID" envDefault:""`
+	ClientSecret string `env:"CLIENT_SECRET" envDefault:""`
+
+	RedirectURI string   `env:"REDIRECT_URI,expand" envDefault:"${SERVER_METHOD}://${SERVER_HOST}:${SERVER_PORT}/api/auth/google/callback"`
+	Scopes      []string `env:"SCOPES" envDefault:"https://www.googleapis.com/auth/userinfo.email"`
+	config      *oauth2.Config
 }
 
 type LogConfig struct {
@@ -35,8 +48,14 @@ type DatabaseConfig struct {
 }
 
 type ServerConfig struct {
-	Host string `env:"HOST" envDefault:"0.0.0.0"`
-	Port string `env:"PORT" envDefault:"8080"`
+	Host   string `env:"HOST" envDefault:"0.0.0.0"`
+	Port   string `env:"PORT" envDefault:"8080"`
+	Method string `env:"METHOD" envDefault:"http"`
+
+	TLS       bool   `env:"TLS" envDefault:"false"`
+	CertFile  string `env:"CERT_FILE" envDefault:"certificates/server.crt"`
+	KeyFile   string `env:"KEY_FILE" envDefault:"certificates/server.key"`
+	TLSConfig *tls.Config
 }
 
 var config *Config
@@ -45,16 +64,39 @@ var once sync.Once
 func GetConfig() *Config {
 	once.Do(func() {
 		config = &Config{}
-		config.GoogleOAuthConfig = &oauth2.Config{
-			ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
-			ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
-			RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URI"),
-			Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
-			Endpoint:     google.Endpoint,
-		}
+
 		if err := env.Parse(config); err != nil {
 			logrus.Fatalf("Failed to parse config: %v", err)
 		}
+
+		if config.ServerConfig.TLS {
+			cert, err := tls.LoadX509KeyPair(config.ServerConfig.CertFile, config.ServerConfig.KeyFile)
+			if err != nil {
+				logrus.Fatalf("Failed to load TLS certificate: %v", err)
+			}
+			config.ServerConfig.TLSConfig = &tls.Config{
+				Certificates: []tls.Certificate{
+					cert,
+				},
+			}
+		} else {
+			config.ServerConfig.TLSConfig = nil
+		}
 	})
 	return config
+}
+
+var googleOnce sync.Once
+
+func (c *Config) GetGoogleOAuthConfig() *oauth2.Config {
+	googleOnce.Do(func() {
+		c.GoogleOAuthConfig.config = &oauth2.Config{
+			ClientID:     c.GoogleOAuthConfig.ClientID,
+			ClientSecret: c.GoogleOAuthConfig.ClientSecret,
+			RedirectURL:  c.GoogleOAuthConfig.RedirectURI,
+			Scopes:       c.GoogleOAuthConfig.Scopes,
+			Endpoint:     google.Endpoint,
+		}
+	})
+	return c.GoogleOAuthConfig.config
 }

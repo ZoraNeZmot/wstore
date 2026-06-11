@@ -1,21 +1,15 @@
 package handlers
 
-<<<<<<< HEAD
-import "net/http"
-=======
 import (
 	"net/http"
 	authhandlers "wstore/internal/handlers/auth"
 	servicehandlers "wstore/internal/handlers/service"
 	userhandlers "wstore/internal/handlers/user"
 )
->>>>>>> swag
 
 type Handlers interface {
 	RegisterRoutes(mux *http.ServeMux) error
 }
-<<<<<<< HEAD
-=======
 
 func RegisterRoutes(mux *http.ServeMux) error {
 	authHandlers := authhandlers.NewAuthHandlers()
@@ -32,4 +26,3 @@ func RegisterRoutes(mux *http.ServeMux) error {
 	}
 	return nil
 }
->>>>>>> swag
