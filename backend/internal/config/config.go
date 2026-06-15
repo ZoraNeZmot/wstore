@@ -2,10 +2,14 @@ package config
 
 import (
 	"crypto/tls"
+	"database/sql"
+	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/caarlos0/env/v11"
 	_ "github.com/joho/godotenv/autoload"
+	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -42,9 +46,26 @@ type LogConfig struct {
 type DatabaseConfig struct {
 	Host     string `env:"HOST" envDefault:"localhost"`
 	Port     int    `env:"PORT" envDefault:"5432"`
-	User     string `env:"USER" envDefault:"postgres"`
-	Password string `env:"PASSWORD" envDefault:"postgres"`
-	Database string `env:"DATABASE" envDefault:"wstore"`
+	User     string `env:"USER,required" envDefault:"postgres"`
+	Password string `env:"PASSWORD,required" envDefault:"postgres"`
+	Database string `env:"DATABASE,required" envDefault:"wstore"`
+	db       *sql.DB
+}
+
+func (c *DatabaseConfig) GetDB() *sql.DB {
+	return c.db
+}
+
+func (c *DatabaseConfig) openDB() error {
+	if c.db == nil {
+		db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", c.Host, c.Port, c.User, c.Password, c.Database))
+		if err != nil {
+			return err
+		}
+		c.db = db
+		return nil
+	}
+	return errors.New("database already opened")
 }
 
 type ServerConfig struct {
@@ -67,6 +88,10 @@ func GetConfig() *Config {
 
 		if err := env.Parse(config); err != nil {
 			logrus.Fatalf("Failed to parse config: %v", err)
+		}
+
+		if err := config.DatabaseConfig.openDB(); err != nil {
+			logrus.Fatalf("Failed to open database: %v", err)
 		}
 
 		if config.ServerConfig.TLS {
