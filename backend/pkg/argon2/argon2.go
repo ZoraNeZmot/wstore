@@ -100,6 +100,11 @@ func (a *Argon2ID) Hash(password string) ([]byte, error) {
 	return []byte(hashString), nil
 }
 
+// Verify if the password is valid
+//
+// INPUT: raw password, encoded hash
+//
+// OUTPUT: true/false, error
 func Verify(password string, encodedHash string) (bool, error) {
 	params, salt, hash, err := decodeHash(encodedHash)
 	if err != nil {

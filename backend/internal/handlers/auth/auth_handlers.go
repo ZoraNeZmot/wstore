@@ -29,5 +29,6 @@ func (a *AuthHandlers) RegisterRoutes(mux *http.ServeMux) error {
 	mux.HandleFunc(handlershelp.GetFullPathAPI("auth/google/callback"), a.GoogleCallback)
 
 	mux.HandleFunc(handlershelp.GetFullPathAPI("auth/email/signup"), a.EmailSignup)
+	mux.HandleFunc(handlershelp.GetFullPathAPI("auth/email/login"), a.EmailLogin)
 	return nil
 }

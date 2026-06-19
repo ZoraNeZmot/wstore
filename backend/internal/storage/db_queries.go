@@ -1,14 +1,26 @@
 package storage
 
 type Queries interface {
-	GetSQLQuery() string
-	GetArgs() []any
+	// params: procName
+	//
+	// return: SQL query and args
+	GetSQLQuery(string) (string, []any)
 }
 
 const (
 	AddUser = `
-	INSERT INTO auth.users (uuid, email, password_hash, name, created_at)
-	VALUES ($1, $2, $3, $4, $5)
-	RETURNING uuid
+	CALL auth.AddUser(
+		$1::uuid,
+		$2::varchar,
+		$3::varchar,
+		$4::varchar,
+		$5::timestamp
+);
+	`
+	CheckUser = `
+	SELECT auth.CheckUser($1::varchar);
+	`
+	GetUserByEmail = `
+	SELECT * FROM auth.GetUserByEmail($1::varchar);
 	`
 )

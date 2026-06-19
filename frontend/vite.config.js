@@ -9,12 +9,12 @@ export default defineConfig({
     savePath: 'public/certificates'
   })],
   server: {
-    port: 3000,
+    port: 8000,
     host: true,
     open: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8443',
         changeOrigin: true,
         // rewrite: (path) => path.replace(/^\/api/, ''),
       },

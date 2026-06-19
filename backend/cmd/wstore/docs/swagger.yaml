@@ -1,4 +1,21 @@
 basePath: /api
+definitions:
+  authhandlers.EmailResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  authhandlers.EmailSignupRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
 host: localhost:8443
 info:
   contact:
@@ -11,6 +28,36 @@ info:
   title: WStore API
   version: "1.0"
 paths:
+  /auth/email/signup:
+    post:
+      consumes:
+      - application/json
+      description: Signup with email and password
+      parameters:
+      - description: User
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/authhandlers.EmailSignupRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/authhandlers.EmailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/authhandlers.EmailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/authhandlers.EmailResponse'
+      summary: Email signup
+      tags:
+      - auth
   /health:
     get:
       description: Check if the server is running

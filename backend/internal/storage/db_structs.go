@@ -1,6 +1,10 @@
 package storage
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type User struct {
 	ID        string    `json:"id"`
@@ -8,24 +12,33 @@ type User struct {
 	Password  string    `json:"password"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func NewUser(id string, email string, password string, name string) *User {
+func NewUser(id uuid.UUID, email string, password string, name string) *User {
 	return &User{
-		ID:        id,
+		ID:        id.String(),
 		Email:     email,
 		Password:  password,
 		Name:      name,
 		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
 	}
 }
 
-func (u *User) GetSQLQuery() string {
-	return AddUser
+func NewUserWithEmail(email string) *User {
+	return &User{
+		Email: email,
+	}
 }
 
-func (u *User) GetArgs() []any {
-	return []any{u.ID, u.Email, u.Password, u.Name, u.CreatedAt}
+func (u *User) GetSQLQuery(procName string) (string, []any) {
+	switch procName {
+	case "AddUser":
+		return AddUser, []any{u.ID, u.Email, u.Password, u.Name, u.CreatedAt}
+	case "CheckUser":
+		return CheckUser, []any{u.Email}
+	case "GetUserByEmail":
+		return GetUserByEmail, []any{u.Email}
+	default:
+		return "", nil
+	}
 }
