@@ -1,19 +1,19 @@
 basePath: /api
 definitions:
-  authhandlers.EmailResponse:
-    properties:
-      error:
-        type: string
-      message:
-        type: string
-    type: object
-  authhandlers.EmailSignupRequest:
+  authhandlers.EmailRequest:
     properties:
       email:
         type: string
       name:
         type: string
       password:
+        type: string
+    type: object
+  authhandlers.EmailResponse:
+    properties:
+      error:
+        type: string
+      message:
         type: string
     type: object
 host: localhost:8443
@@ -28,6 +28,36 @@ info:
   title: WStore API
   version: "1.0"
 paths:
+  /auth/email/login:
+    post:
+      consumes:
+      - application/json
+      description: Login with email and password
+      parameters:
+      - description: User
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/authhandlers.EmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/authhandlers.EmailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/authhandlers.EmailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/authhandlers.EmailResponse'
+      summary: Email login
+      tags:
+      - auth
   /auth/email/signup:
     post:
       consumes:
@@ -39,7 +69,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/authhandlers.EmailSignupRequest'
+          $ref: '#/definitions/authhandlers.EmailRequest'
       produces:
       - application/json
       responses:

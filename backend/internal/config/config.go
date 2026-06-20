@@ -69,9 +69,10 @@ func (c *DatabaseConfig) openDB() error {
 }
 
 type ServerConfig struct {
-	Host   string `env:"HOST" envDefault:"0.0.0.0"`
-	Port   string `env:"PORT" envDefault:"8080"`
-	Method string `env:"METHOD" envDefault:"http"`
+	Host      string `env:"HOST" envDefault:"0.0.0.0"`
+	Port      string `env:"PORT" envDefault:"8080"`
+	Method    string `env:"METHOD" envDefault:"http"`
+	JwtSecret string `env:"JWT_SECRET,required"`
 
 	TLS       bool   `env:"TLS" envDefault:"false"`
 	CertFile  string `env:"CERT_FILE" envDefault:"certificates/server.crt"`

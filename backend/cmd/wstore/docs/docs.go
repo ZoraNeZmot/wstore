@@ -22,6 +22,52 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/email/login": {
+            "post": {
+                "description": "Login with email and password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Email login",
+                "parameters": [
+                    {
+                        "description": "User",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/authhandlers.EmailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/authhandlers.EmailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/authhandlers.EmailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/authhandlers.EmailResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/email/signup": {
             "post": {
                 "description": "Signup with email and password",
@@ -42,7 +88,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/authhandlers.EmailSignupRequest"
+                            "$ref": "#/definitions/authhandlers.EmailRequest"
                         }
                     }
                 ],
@@ -87,18 +133,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "authhandlers.EmailResponse": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "authhandlers.EmailSignupRequest": {
+        "authhandlers.EmailRequest": {
             "type": "object",
             "properties": {
                 "email": {
@@ -108,6 +143,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "authhandlers.EmailResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "message": {
                     "type": "string"
                 }
             }
