@@ -50,19 +50,19 @@ func (d *Database) VerifyUser(ctx context.Context, user *User) bool {
 func (d *Database) GetUserByEmail(ctx context.Context, user *User) (*User, error) {
 	var userData User
 	result := d.QueryRow(ctx, "GetUserByEmail", user)
-	err := result.Scan(&userData.ID, &userData.Email, &userData.Password, &userData.Name, &userData.CreatedAt)
+	err := result.Scan(&userData.ID, &userData.Email, &userData.Password, &userData.Name)
 	return &userData, err
 }
 
-func (d *Database) CheckUser(ctx context.Context, user *User) bool {
+func (d *Database) IsUserExists(ctx context.Context, user *User) bool {
 	var exists bool
-	result := d.QueryRow(ctx, "CheckUser", user)
+	result := d.QueryRow(ctx, "IsUserExists", user)
 	result.Scan(&exists)
 	return exists
 }
 
-func (d *Database) AddUser(ctx context.Context, user *User) (int64, error) {
-	_, err := d.ExecQuery(ctx, "AddUser", user)
+func (d *Database) CreateUser(ctx context.Context, user *User) (int64, error) {
+	_, err := d.ExecQuery(ctx, "CreateUser", user)
 	if err != nil {
 		return 0, err
 	}

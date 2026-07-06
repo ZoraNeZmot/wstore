@@ -8,18 +8,18 @@ type Queries interface {
 }
 
 const (
-	AddUser = `
-	CALL auth.AddUser(
-		$1::uuid,
-		$2::varchar,
-		$3::varchar,
-		$4::varchar,
-		$5::timestamp
-);
+	CreateUser = `
+	CALL accounts.upc_create_user(
+			$1::varchar,
+			$2::varchar
+	);
 	`
-	CheckUser = `
-	SELECT auth.CheckUser($1::varchar);
+
+	IsUserExists = `
+	SELECT accounts.ufn_is_user_exists($1::varchar);
 	`
+	/// NOT DONE YET
+
 	GetUserByEmail = `
 	SELECT * FROM auth.GetUserByEmail($1::varchar);
 	`

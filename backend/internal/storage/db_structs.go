@@ -7,20 +7,18 @@ import (
 )
 
 type User struct {
-	ID        string    `json:"id"`
+	ID        uuid.UUID `json:"id"`
 	Email     string    `json:"email"`
 	Password  string    `json:"password"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func NewUser(id uuid.UUID, email string, password string, name string) *User {
+func NewUser(email string, password string, name string) *User {
 	return &User{
-		ID:        id.String(),
-		Email:     email,
-		Password:  password,
-		Name:      name,
-		CreatedAt: time.Now(),
+		Email:    email,
+		Password: password,
+		Name:     name,
 	}
 }
 
@@ -32,10 +30,10 @@ func NewUserWithEmail(email string) *User {
 
 func (u *User) GetSQLQuery(procName string) (string, []any) {
 	switch procName {
-	case "AddUser":
-		return AddUser, []any{u.ID, u.Email, u.Password, u.Name, u.CreatedAt}
-	case "CheckUser":
-		return CheckUser, []any{u.Email}
+	case "CreateUser":
+		return CreateUser, []any{u.Email, u.Password, u.Name}
+	case "IsUserExists":
+		return IsUserExists, []any{u.Email}
 	case "GetUserByEmail":
 		return GetUserByEmail, []any{u.Email}
 	case "GetUsers":

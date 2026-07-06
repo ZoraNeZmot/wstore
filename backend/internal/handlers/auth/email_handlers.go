@@ -12,8 +12,6 @@ import (
 	"wstore/internal/storage/dberrors"
 	"wstore/pkg/argon2"
 	"wstore/pkg/token"
-
-	"github.com/google/uuid"
 )
 
 type EmailRequest struct {
@@ -71,16 +69,16 @@ func (a *AuthHandlers) EmailSignup(w http.ResponseWriter, r *http.Request) {
 	user.Password = string(hashPassword)
 	user.Email = strings.ToLower(user.Email)
 	user.Name = strings.ToUpper(user.Name)
-	id := uuid.New()
-	userData := storage.NewUser(id, user.Email, user.Password, user.Name)
-	exists := a.db.CheckUser(r.Context(), userData)
+
+	userData := storage.NewUser(user.Email, user.Password, user.Name)
+	exists := a.db.IsUserExists(r.Context(), userData)
 	if exists {
 		handlershelp.JSONError(w, http.StatusBadRequest, dberrors.UserAlreadyExists.Error())
 		a.logger.Warnf("EmailSignup: User already exists: %v", err)
 		return
 	}
 
-	_, err = a.db.AddUser(
+	_, err = a.db.CreateUser(
 		r.Context(),
 		userData,
 	)
