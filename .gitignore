@@ -28,6 +28,7 @@ go.work.sum
 #Other files
 images/
 certificates/
+roles.sql
 
 # env file
 .env

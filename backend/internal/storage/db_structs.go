@@ -38,6 +38,8 @@ func (u *User) GetSQLQuery(procName string) (string, []any) {
 		return CheckUser, []any{u.Email}
 	case "GetUserByEmail":
 		return GetUserByEmail, []any{u.Email}
+	case "GetUsers":
+		return GetUsers, []any{}
 	default:
 		return "", nil
 	}

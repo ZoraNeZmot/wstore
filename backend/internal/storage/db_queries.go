@@ -23,4 +23,7 @@ const (
 	GetUserByEmail = `
 	SELECT * FROM auth.GetUserByEmail($1::varchar);
 	`
+	GetUsers = `
+	SELECT id, email, password, name, created_at FROM auth.users;
+	`
 )

@@ -26,6 +26,11 @@ func (d *Database) ExecQuery(ctx context.Context, queryName string, query Querie
 	return d.db.ExecContext(ctx, sqlQuery, args...)
 }
 
+func (d *Database) Query(ctx context.Context, queryName string, query Queries) (*sql.Rows, error) {
+	sqlQuery, args := query.GetSQLQuery(queryName)
+	return d.db.QueryContext(ctx, sqlQuery, args...)
+}
+
 func (d *Database) QueryRow(ctx context.Context, queryName string, query Queries) *sql.Row {
 	sqlQuery, args := query.GetSQLQuery(queryName)
 	return d.db.QueryRowContext(ctx, sqlQuery, args...)
@@ -62,4 +67,22 @@ func (d *Database) AddUser(ctx context.Context, user *User) (int64, error) {
 		return 0, err
 	}
 	return 1, nil
+}
+
+func (d *Database) GetUsers(ctx context.Context) ([]User, error) {
+	var users []User
+	result, err := d.Query(ctx, "GetUsers", &User{})
+	if err != nil {
+		return nil, err
+	}
+	defer result.Close()
+	for result.Next() {
+		var user User
+		err = result.Scan(&user.ID, &user.Email, &user.Password, &user.Name, &user.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
 }

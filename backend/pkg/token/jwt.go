@@ -2,12 +2,27 @@ package token
 
 import (
 	"errors"
+	"net/http"
+	"strings"
 	"time"
 	"wstore/internal/config"
 	"wstore/internal/storage"
 
 	"github.com/golang-jwt/jwt/v5"
 )
+
+func ValidateAuthHeader(r *http.Request) error {
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		return errors.New("unauthorized")
+	}
+	token = strings.TrimPrefix(token, "Bearer ")
+	err := ValidateToken(token)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 func GenerateToken(user *storage.User) (string, error) {
 	claims := jwt.MapClaims{
@@ -19,16 +34,16 @@ func GenerateToken(user *storage.User) (string, error) {
 	return token.SignedString([]byte(config.ServerConfig.JwtSecret))
 }
 
-func ValidateToken(tokenString string) (bool, error) {
+func ValidateToken(tokenString string) error {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		secret := config.GetConfig().ServerConfig.JwtSecret
 		return []byte(secret), nil
 	})
 	if err != nil {
-		return false, err
+		return err
 	}
 	if !token.Valid {
-		return false, errors.New("invalid token")
+		return errors.New("Unauthorized")
 	}
-	return true, nil
+	return nil
 }
