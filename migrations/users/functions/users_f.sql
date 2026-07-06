@@ -19,10 +19,17 @@ $$ LANGUAGE plpgsql;
 -- GET USER
 CREATE OR REPLACE FUNCTION accounts.ufn_get_user_by_email(
     p_email text
-) RETURNS accounts.users 
+) RETURNS table (id INT, email TEXT, name TEXT, pass TEXT) 
 AS $$
-    SELECT * FROM accounts.users WHERE email = p_email;
-$$ LANGUAGE sql;
+DECLARE
+    v_user accounts.users;
+    v_pass text;
+BEGIN
+    SELECT * FROM accounts.users WHERE email = p_email INTO v_user;
+    v_pass := accounts.ufn_get_user_pass(v_user.id);
+    RETURN (v_user.id, v_user.email, v_user.name, v_pass);
+END;
+$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION accounts.ufn_get_user_by_uid(
     p_uid uuid
