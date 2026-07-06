@@ -1,0 +1,5 @@
+CREATE DATABASE IF NOT EXISTS wstore;
+
+\c wstore;
+
+CREATE SCHEMA IF NOT EXISTS users;
