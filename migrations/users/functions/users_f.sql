@@ -1,13 +1,17 @@
 -- CREATE USER
-CREATE OR REPLACE PROCEDURE accounts.upc_create_user(
-    p_uid uuid,
+CREATE OR REPLACE FUNCTION accounts.ufn_create_user(
     p_email text,
     p_password text,
     p_name text
-) 
+) RETURNS INT
 AS $$
+DECLARE 
+   v_user_id INT;
 BEGIN
-    INSERT INTO accounts.users (uid, email, password, name) VALUES (p_uid, p_email, p_password, p_name);
+    INSERT INTO accounts.users (email, name) VALUES (p_email, p_name) RETURNING id INTO v_user_id;
+    CALL accounts.upc_create_user_pass(v_user_id, p_password);
+
+    RETURN v_user_id;
 END;
 $$ LANGUAGE plpgsql;
 
