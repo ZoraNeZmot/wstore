@@ -21,7 +21,7 @@ type JsonResponseMessage struct {
 }
 
 const (
-	JsonOk = `{\"message\": \"ok\"}`
+	JsonOk = `{"message": "ok"}`
 )
 
 func JSONError(w http.ResponseWriter, status int, err string) {

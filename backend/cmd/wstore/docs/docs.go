@@ -50,19 +50,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/authhandlers.EmailResponse"
+                            "$ref": "#/definitions/handlershelp.JsonResponseToken"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/authhandlers.EmailResponse"
+                            "$ref": "#/definitions/handlershelp.JsonResponseError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/authhandlers.EmailResponse"
+                            "$ref": "#/definitions/handlershelp.JsonResponseError"
                         }
                     }
                 }
@@ -96,25 +96,47 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/authhandlers.EmailResponse"
+                            "$ref": "#/definitions/handlershelp.JsonResponseMessage"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/authhandlers.EmailResponse"
+                            "$ref": "#/definitions/handlershelp.JsonResponseError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/authhandlers.EmailResponse"
+                            "$ref": "#/definitions/handlershelp.JsonResponseError"
                         }
                     }
                 }
             }
         },
-        "/health": {
+        "/service/authtest": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Test if the user is authorized",
+                "tags": [
+                    "service"
+                ],
+                "summary": "Auth test",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlershelp.JsonResponseMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/health": {
             "get": {
                 "description": "Check if the server is running",
                 "tags": [
@@ -125,7 +147,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlershelp.JsonResponseMessage"
                         }
                     }
                 }
@@ -147,13 +169,26 @@ const docTemplate = `{
                 }
             }
         },
-        "authhandlers.EmailResponse": {
+        "handlershelp.JsonResponseError": {
             "type": "object",
             "properties": {
                 "error": {
                     "type": "string"
-                },
+                }
+            }
+        },
+        "handlershelp.JsonResponseMessage": {
+            "type": "object",
+            "properties": {
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlershelp.JsonResponseToken": {
+            "type": "object",
+            "properties": {
+                "token": {
                     "type": "string"
                 }
             }

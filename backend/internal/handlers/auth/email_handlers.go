@@ -7,9 +7,10 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 	handlershelp "wstore/internal/handlers/help"
-	"wstore/internal/storage"
 	"wstore/internal/storage/dberrors"
+	"wstore/internal/storage/dbusers"
 	"wstore/pkg/argon2"
 	"wstore/pkg/token"
 )
@@ -32,9 +33,9 @@ func (a *AuthHandlers) EmailRegisterRoutes(mux *http.ServeMux) error {
 // @Accept			json
 // @Produce		json
 // @Param			user	body		EmailRequest	true	"User"
-// @Success		201		{object}	EmailMessage
-// @Failure		400		{object}	EmailError
-// @Failure		500		{object}	EmailError
+// @Success		201		{object}	handlershelp.JsonResponseMessage
+// @Failure		400		{object}	handlershelp.JsonResponseError
+// @Failure		500		{object}	handlershelp.JsonResponseError
 // @Router			/auth/email/signup [post]
 func (a *AuthHandlers) EmailSignup(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -70,7 +71,7 @@ func (a *AuthHandlers) EmailSignup(w http.ResponseWriter, r *http.Request) {
 	user.Email = strings.ToLower(user.Email)
 	user.Name = strings.ToUpper(user.Name)
 
-	userData := storage.NewUser(user.Email, user.Password, user.Name)
+	userData := dbusers.NewUser(user.Email, user.Password, user.Name)
 	exists := a.db.IsUserExists(r.Context(), userData)
 	if exists {
 		handlershelp.JSONError(w, http.StatusBadRequest, dberrors.UserAlreadyExists.Error())
@@ -102,9 +103,9 @@ func (a *AuthHandlers) EmailSignup(w http.ResponseWriter, r *http.Request) {
 // @Accept			json
 // @Produce		json
 // @Param			user	body		EmailRequest	true	"User"
-// @Success		200		{object}	EmailMessage
-// @Failure		400		{object}	EmailError
-// @Failure		500		{object}	EmailError
+// @Success		200		{object}	handlershelp.JsonResponseToken
+// @Failure		400		{object}	handlershelp.JsonResponseError
+// @Failure		500		{object}	handlershelp.JsonResponseError
 // @Router			/auth/email/login [post]
 func (a *AuthHandlers) EmailLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -129,7 +130,7 @@ func (a *AuthHandlers) EmailLogin(w http.ResponseWriter, r *http.Request) {
 
 	user.Email = strings.ToLower(user.Email)
 
-	userData, err := a.db.GetUserByEmail(r.Context(), storage.NewUserWithEmail(user.Email))
+	userData, err := a.db.GetUserByEmail(r.Context(), dbusers.NewUserWithEmail(user.Email))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			handlershelp.JSONError(w, http.StatusUnauthorized, "User not found. Check your email or password")
@@ -156,7 +157,12 @@ func (a *AuthHandlers) EmailLogin(w http.ResponseWriter, r *http.Request) {
 
 	// w.WriteHeader(http.StatusOK)
 	// json.NewEncoder(w).Encode(OkResponse)
-	tokenString, err := token.GenerateToken(userData)
+	tokenString, err := token.GenerateToken(token.TokenClaims{
+		UserID: userData.ID,
+		Email:  userData.Email,
+		Name:   userData.Name,
+		Exp:    time.Now().Add(time.Hour * 24),
+	})
 	if err != nil {
 		handlershelp.JSONError(w, http.StatusInternalServerError, "Failed to generate token. Try again later")
 		a.logger.Errorf("EmailLogin: Failed to generate token: %v", err)

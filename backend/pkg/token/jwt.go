@@ -6,10 +6,17 @@ import (
 	"strings"
 	"time"
 	"wstore/internal/config"
-	"wstore/internal/storage"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
+
+type TokenClaims struct {
+	UserID uuid.UUID `json:"user_id"`
+	Email  string    `json:"email"`
+	Name   string    `json:"name"`
+	Exp    time.Time `json:"exp"`
+}
 
 func ValidateAuthHeader(r *http.Request) error {
 	token := r.Header.Get("Authorization")
@@ -24,12 +31,13 @@ func ValidateAuthHeader(r *http.Request) error {
 	return nil
 }
 
-func GenerateToken(user *storage.User) (string, error) {
-	claims := jwt.MapClaims{
-		"sub": user.ID,
-		"exp": time.Now().Add(time.Hour * 24).Unix(),
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+func GenerateToken(claims TokenClaims) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub":   claims.UserID,
+		"email": claims.Email,
+		"name":  claims.Name,
+		"exp":   claims.Exp.Unix(),
+	})
 	config := config.GetConfig()
 	return token.SignedString([]byte(config.ServerConfig.JwtSecret))
 }

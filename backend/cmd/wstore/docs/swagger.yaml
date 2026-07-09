@@ -9,11 +9,19 @@ definitions:
       password:
         type: string
     type: object
-  authhandlers.EmailResponse:
+  handlershelp.JsonResponseError:
     properties:
       error:
         type: string
+    type: object
+  handlershelp.JsonResponseMessage:
+    properties:
       message:
+        type: string
+    type: object
+  handlershelp.JsonResponseToken:
+    properties:
+      token:
         type: string
     type: object
 host: localhost:8443
@@ -46,15 +54,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/authhandlers.EmailResponse'
+            $ref: '#/definitions/handlershelp.JsonResponseToken'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/authhandlers.EmailResponse'
+            $ref: '#/definitions/handlershelp.JsonResponseError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/authhandlers.EmailResponse'
+            $ref: '#/definitions/handlershelp.JsonResponseError'
       summary: Email login
       tags:
       - auth
@@ -76,26 +84,39 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/authhandlers.EmailResponse'
+            $ref: '#/definitions/handlershelp.JsonResponseMessage'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/authhandlers.EmailResponse'
+            $ref: '#/definitions/handlershelp.JsonResponseError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/authhandlers.EmailResponse'
+            $ref: '#/definitions/handlershelp.JsonResponseError'
       summary: Email signup
       tags:
       - auth
-  /health:
+  /service/authtest:
+    get:
+      description: Test if the user is authorized
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlershelp.JsonResponseMessage'
+      security:
+      - Bearer: []
+      summary: Auth test
+      tags:
+      - service
+  /service/health:
     get:
       description: Check if the server is running
       responses:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/handlershelp.JsonResponseMessage'
       summary: Health check
       tags:
       - service

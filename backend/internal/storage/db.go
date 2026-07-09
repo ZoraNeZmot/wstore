@@ -5,6 +5,13 @@ import (
 	"database/sql"
 )
 
+type Queries interface {
+	// params: procName
+	//
+	// return: SQL query and args
+	GetSQLQuery(string) (string, []any)
+}
+
 type Database struct {
 	db *sql.DB
 }
@@ -34,55 +41,4 @@ func (d *Database) Query(ctx context.Context, queryName string, query Queries) (
 func (d *Database) QueryRow(ctx context.Context, queryName string, query Queries) *sql.Row {
 	sqlQuery, args := query.GetSQLQuery(queryName)
 	return d.db.QueryRowContext(ctx, sqlQuery, args...)
-}
-
-/*
-	EMAIL AUTHENTICATION
-*/
-
-func (d *Database) VerifyUser(ctx context.Context, user *User) bool {
-	var checked bool
-	result := d.QueryRow(ctx, "VerifyUser", user)
-	result.Scan(&checked)
-	return checked
-}
-
-func (d *Database) GetUserByEmail(ctx context.Context, user *User) (*User, error) {
-	var userData User
-	result := d.QueryRow(ctx, "GetUserByEmail", user)
-	err := result.Scan(&userData.ID, &userData.Email, &userData.Password, &userData.Name)
-	return &userData, err
-}
-
-func (d *Database) IsUserExists(ctx context.Context, user *User) bool {
-	var exists bool
-	result := d.QueryRow(ctx, "IsUserExists", user)
-	result.Scan(&exists)
-	return exists
-}
-
-func (d *Database) CreateUser(ctx context.Context, user *User) (int64, error) {
-	_, err := d.ExecQuery(ctx, "CreateUser", user)
-	if err != nil {
-		return 0, err
-	}
-	return 1, nil
-}
-
-func (d *Database) GetUsers(ctx context.Context) ([]User, error) {
-	var users []User
-	result, err := d.Query(ctx, "GetUsers", &User{})
-	if err != nil {
-		return nil, err
-	}
-	defer result.Close()
-	for result.Next() {
-		var user User
-		err = result.Scan(&user.ID, &user.Email, &user.Password, &user.Name, &user.CreatedAt)
-		if err != nil {
-			return nil, err
-		}
-		users = append(users, user)
-	}
-	return users, nil
 }

@@ -38,8 +38,8 @@ func (s *ServiceHandlers) SwaggerLicense(w http.ResponseWriter, r *http.Request)
 // @Summary		Health check
 // @Description	Check if the server is running
 // @Tags			service
-// @Success		200	{string}	string	"OK"
-// @Router			/health [get]
+// @Success		200	{object}	handlershelp.JsonResponseMessage
+// @Router			/service/health [get]
 func (s *ServiceHandlers) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	logrus.WithField("Handler Type", "Service").Trace("HealthCheck")
 	w.WriteHeader(http.StatusOK)
@@ -52,7 +52,7 @@ func (s *ServiceHandlers) HealthCheck(w http.ResponseWriter, r *http.Request) {
 // @Summary		Auth test
 // @Description	Test if the user is authorized
 // @Tags			service
-// @Success		200	{string}	string	"OK"
+// @Success		200	{object}	handlershelp.JsonResponseMessage
 // @Router			/service/authtest [get]
 // @Security		Bearer
 func (s *ServiceHandlers) AuthTest(w http.ResponseWriter, r *http.Request) {
