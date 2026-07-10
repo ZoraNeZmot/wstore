@@ -15,7 +15,7 @@ import (
 //	@contact.email	kureichukns@gmail.com
 
 //	@license.name	Apache 2.0
-//	@license.url	license.txt
+//	@license.url	api/license.txt
 
 //	@host		localhost:8443
 //	@schemes	https http

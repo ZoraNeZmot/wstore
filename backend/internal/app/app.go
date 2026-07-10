@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"wstore/internal/config"
 	"wstore/internal/handlers"
@@ -31,7 +32,6 @@ func New() *App {
 		Config: conf,
 		Server: &http.Server{
 			Addr:      net.JoinHostPort(conf.ServerConfig.Host, conf.ServerConfig.Port),
-			Handler:   http.NewServeMux(),
 			TLSConfig: conf.ServerConfig.TLSConfig,
 		},
 	}
@@ -47,9 +47,17 @@ func (a *App) Init() error {
 	a.ctxStop = ctxStop
 	go a.waitForShutdown(ctx)
 
-	if err := handlers.RegisterRoutes(a.Server.Handler.(*http.ServeMux)); err != nil {
+	innerMux := http.NewServeMux()
+	outerMux := http.NewServeMux()
+	if err := handlers.RegisterSwagger(outerMux); err != nil {
 		return err
 	}
+	if err := handlers.RegisterRoutes(innerMux); err != nil {
+		return err
+	}
+	basePath := strings.TrimRight(a.Config.ServerConfig.BasePath, "/")
+	outerMux.Handle(basePath+"/", http.StripPrefix(basePath, innerMux))
+	a.Server.Handler = outerMux
 
 	return nil
 }

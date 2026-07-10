@@ -28,10 +28,19 @@ func NewUserWithEmail(email string) *User {
 	}
 }
 
+func NewOAuthUser(email string, name string) *User {
+	return &User{
+		Email: email,
+		Name:  name,
+	}
+}
+
 func (u *User) GetSQLQuery(procName string) (string, []any) {
 	switch procName {
 	case "CreateUser":
 		return CreateUser, []any{u.Email, u.Password, u.Name}
+	case "CreateOAuthUser":
+		return CreateOAuthUser, []any{u.Email, u.Name}
 	case "IsUserExists":
 		return IsUserExists, []any{u.Email}
 	case "GetUserByEmail":

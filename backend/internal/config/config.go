@@ -17,6 +17,7 @@ import (
 
 type Config struct {
 	DebugMode         bool              `env:"DEBUG_MODE" envDefault:"false"`
+	FrontendURL       string            `env:"FRONTEND_URL" envDefault:"https://localhost:8000"`
 	LogConfig         LogConfig         `envPrefix:"LOG_"`
 	ServerConfig      ServerConfig      `envPrefix:"SERVER_"`
 	DatabaseConfig    DatabaseConfig    `envPrefix:"DATABASE_"`
@@ -33,7 +34,7 @@ type GoogleOAuthConfig struct {
 	ClientSecret string `env:"CLIENT_SECRET" envDefault:""`
 
 	RedirectURI string   `env:"REDIRECT_URI,expand" envDefault:"${SERVER_METHOD}://${SERVER_HOST}:${SERVER_PORT}/api/auth/google/callback"`
-	Scopes      []string `env:"SCOPES" envDefault:"https://www.googleapis.com/auth/userinfo.email"`
+	Scopes      []string `env:"SCOPES" envDefault:"openid,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/userinfo.profile"`
 	config      *oauth2.Config
 }
 
@@ -72,6 +73,7 @@ type ServerConfig struct {
 	Host      string `env:"HOST" envDefault:"0.0.0.0"`
 	Port      string `env:"PORT" envDefault:"8080"`
 	Method    string `env:"METHOD" envDefault:"http"`
+	BasePath  string `env:"BASE_PATH" envDefault:"/api"`
 	JwtSecret string `env:"JWT_SECRET,required"`
 
 	TLS       bool   `env:"TLS" envDefault:"false"`

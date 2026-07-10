@@ -15,7 +15,7 @@ const docTemplate = `{
         },
         "license": {
             "name": "Apache 2.0",
-            "url": "license.txt"
+            "url": "api/license.txt"
         },
         "version": "{{.Version}}"
     },
@@ -50,19 +50,28 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlershelp.JsonResponseToken"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handlershelp.JsonResponseError"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/handlershelp.JsonResponseError"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -96,19 +105,38 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/handlershelp.JsonResponseMessage"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.MessageResponse"
+                                        },
+                                        "error": {}
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handlershelp.JsonResponseError"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/handlershelp.JsonResponseError"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -130,7 +158,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlershelp.JsonResponseMessage"
+                            "$ref": "#/definitions/response.FlagDTO"
                         }
                     }
                 }
@@ -147,7 +175,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlershelp.JsonResponseMessage"
+                            "$ref": "#/definitions/response.FlagDTO"
                         }
                     }
                 }
@@ -169,15 +197,15 @@ const docTemplate = `{
                 }
             }
         },
-        "handlershelp.JsonResponseError": {
+        "response.FlagDTO": {
             "type": "object",
             "properties": {
-                "error": {
-                    "type": "string"
+                "success": {
+                    "type": "boolean"
                 }
             }
         },
-        "handlershelp.JsonResponseMessage": {
+        "response.MessageResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -185,10 +213,26 @@ const docTemplate = `{
                 }
             }
         },
-        "handlershelp.JsonResponseToken": {
+        "response.Response": {
             "type": "object",
             "properties": {
-                "token": {
+                "data": {},
+                "error": {
+                    "$ref": "#/definitions/response.ResponseError"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "response.ResponseError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "details": {},
+                "message": {
                     "type": "string"
                 }
             }

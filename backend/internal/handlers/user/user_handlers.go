@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"wstore/internal/config"
 	handlershelp "wstore/internal/handlers/help"
+	"wstore/internal/handlers/help/response"
 	"wstore/internal/storage"
 
 	"github.com/sirupsen/logrus"
@@ -27,7 +28,7 @@ func NewUserHandlers() *UserHandlers {
 
 func (u *UserHandlers) RegisterRoutes(mux *http.ServeMux) error {
 	mux.Handle(
-		handlershelp.GetFullPathAPI("users"),
+		"/users",
 		handlershelp.AuthMiddleware(http.HandlerFunc(u.GetUsers)),
 	)
 	return nil
@@ -36,7 +37,7 @@ func (u *UserHandlers) RegisterRoutes(mux *http.ServeMux) error {
 func (u *UserHandlers) GetUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := u.db.GetUsers(r.Context())
 	if err != nil {
-		handlershelp.JSONError(w, http.StatusInternalServerError, "Failed to get users")
+		response.Error(w, http.StatusInternalServerError, "Failed to get users", err.Error())
 		u.logger.WithError(err).Error("Failed to get users")
 		return
 	}

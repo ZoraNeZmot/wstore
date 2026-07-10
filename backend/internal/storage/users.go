@@ -3,6 +3,8 @@ package storage
 import (
 	"context"
 	"wstore/internal/storage/dbusers"
+
+	"github.com/google/uuid"
 )
 
 /*
@@ -36,6 +38,12 @@ func (d *Database) CreateUser(ctx context.Context, user *dbusers.User) (int64, e
 		return 0, err
 	}
 	return 1, nil
+}
+
+func (d *Database) CreateOAuthUser(ctx context.Context, user *dbusers.User) (uuid.UUID, error) {
+	var uid uuid.UUID
+	err := d.QueryRow(ctx, "CreateOAuthUser", user).Scan(&uid)
+	return uid, err
 }
 
 func (d *Database) GetUsers(ctx context.Context) ([]dbusers.User, error) {

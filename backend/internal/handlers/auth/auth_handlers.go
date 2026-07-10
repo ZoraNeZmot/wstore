@@ -3,11 +3,16 @@ package authhandlers
 import (
 	"net/http"
 	"wstore/internal/config"
-	handlershelp "wstore/internal/handlers/help"
 	"wstore/internal/storage"
 
 	"github.com/sirupsen/logrus"
 )
+
+type EmailRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Name     string `json:"name"`
+}
 
 type AuthHandlers struct {
 	db     *storage.Database
@@ -25,11 +30,14 @@ func NewAuthHandlers() *AuthHandlers {
 }
 
 func (a *AuthHandlers) RegisterRoutes(mux *http.ServeMux) error {
-	mux.HandleFunc(handlershelp.GetFullPathAPI("auth/google/login"), a.GoogleLogin)
-	mux.HandleFunc(handlershelp.GetFullPathAPI("auth/google/callback"), a.GoogleCallback)
-
-	mux.HandleFunc(handlershelp.GetFullPathAPI("auth/email/signup"), a.EmailSignup)
-	mux.HandleFunc(handlershelp.GetFullPathAPI("auth/email/login"), a.EmailLogin)
+	err := a.EmailRegisterRoutes(mux)
+	if err != nil {
+		return err
+	}
+	// err = a.GoogleRegisterRoutes(mux)
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }

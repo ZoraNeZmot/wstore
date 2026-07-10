@@ -9,6 +9,13 @@ const (
 	);
 	`
 
+	CreateOAuthUser = `
+	SELECT accounts.ufn_create_oauth_user(
+			$1::varchar,
+			$2::varchar
+	);
+	`
+
 	IsUserExists = `
 	SELECT accounts.ufn_is_user_exists($1::varchar);
 	`

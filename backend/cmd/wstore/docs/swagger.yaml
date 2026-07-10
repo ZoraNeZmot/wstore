@@ -9,19 +9,30 @@ definitions:
       password:
         type: string
     type: object
-  handlershelp.JsonResponseError:
+  response.FlagDTO:
     properties:
-      error:
-        type: string
+      success:
+        type: boolean
     type: object
-  handlershelp.JsonResponseMessage:
+  response.MessageResponse:
     properties:
       message:
         type: string
     type: object
-  handlershelp.JsonResponseToken:
+  response.Response:
     properties:
-      token:
+      data: {}
+      error:
+        $ref: '#/definitions/response.ResponseError'
+      success:
+        type: boolean
+    type: object
+  response.ResponseError:
+    properties:
+      code:
+        type: integer
+      details: {}
+      message:
         type: string
     type: object
 host: localhost:8443
@@ -32,7 +43,7 @@ info:
   description: WStore API
   license:
     name: Apache 2.0
-    url: license.txt
+    url: api/license.txt
   title: WStore API
   version: "1.0"
 paths:
@@ -54,15 +65,21 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlershelp.JsonResponseToken'
+            additionalProperties:
+              type: string
+            type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlershelp.JsonResponseError'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handlershelp.JsonResponseError'
+            additionalProperties:
+              type: string
+            type: object
       summary: Email login
       tags:
       - auth
@@ -84,15 +101,25 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/handlershelp.JsonResponseMessage'
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.MessageResponse'
+                error: {}
+              type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlershelp.JsonResponseError'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handlershelp.JsonResponseError'
+            additionalProperties:
+              type: string
+            type: object
       summary: Email signup
       tags:
       - auth
@@ -103,7 +130,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlershelp.JsonResponseMessage'
+            $ref: '#/definitions/response.FlagDTO'
       security:
       - Bearer: []
       summary: Auth test
@@ -116,7 +143,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlershelp.JsonResponseMessage'
+            $ref: '#/definitions/response.FlagDTO'
       summary: Health check
       tags:
       - service
