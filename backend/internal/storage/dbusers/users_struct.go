@@ -9,9 +9,9 @@ import (
 type User struct {
 	ID        uuid.UUID `json:"id"`
 	Email     string    `json:"email"`
-	Password  string    `json:"password"`
+	Password  string    `json:"password,omitempty"`
 	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
 func NewUser(email string, password string, name string) *User {
@@ -25,6 +25,19 @@ func NewUser(email string, password string, name string) *User {
 func NewUserWithEmail(email string) *User {
 	return &User{
 		Email: email,
+	}
+}
+
+func NewUserWithUid(uid string) *User {
+	uidUUID, err := uuid.Parse(uid)
+	if err != nil {
+		return nil
+	}
+	return &User{
+		ID:       uidUUID,
+		Email:    "",
+		Password: "",
+		Name:     "",
 	}
 }
 
@@ -45,6 +58,8 @@ func (u *User) GetSQLQuery(procName string) (string, []any) {
 		return IsUserExists, []any{u.Email}
 	case "GetUserByEmail":
 		return GetUserByEmail, []any{u.Email}
+	case "GetUserByUid":
+		return GetUserByUid, []any{u.ID}
 	case "GetUsers":
 		return GetUsers, []any{}
 	default:

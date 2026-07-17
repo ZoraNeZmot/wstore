@@ -1,4 +1,4 @@
-basePath: /api
+basePath: /api/
 definitions:
   authhandlers.EmailRequest:
     properties:
@@ -9,38 +9,82 @@ definitions:
       password:
         type: string
     type: object
+  response.ErrorDTO:
+    properties:
+      error:
+        $ref: '#/definitions/response.ResponseError'
+      success:
+        type: boolean
+    type: object
   response.FlagDTO:
     properties:
       success:
         type: boolean
     type: object
-  response.MessageResponse:
+  response.MessageDTO:
     properties:
-      message:
-        type: string
-    type: object
-  response.Response:
-    properties:
-      data: {}
-      error:
-        $ref: '#/definitions/response.ResponseError'
+      data:
+        properties:
+          message:
+            type: string
+        type: object
       success:
         type: boolean
     type: object
   response.ResponseError:
     properties:
       code:
+        example: 400
         type: integer
       details: {}
       message:
+        example: Validation failed
         type: string
     type: object
-host: localhost:8443
+  response.TokenDTO:
+    properties:
+      data:
+        properties:
+          accessToken:
+            type: string
+        type: object
+      success:
+        type: boolean
+    type: object
+  response.UserDTO:
+    properties:
+      data:
+        $ref: '#/definitions/response.UserResponse'
+      success:
+        type: boolean
+    type: object
+  response.UserResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  response.UsersListDTO:
+    properties:
+      data:
+        properties:
+          users:
+            items:
+              $ref: '#/definitions/response.UserResponse'
+            type: array
+        type: object
+      success:
+        type: boolean
+    type: object
 info:
   contact:
     email: kureichukns@gmail.com
     name: API Supports
-  description: WStore API
+  description: WStore API. Response model is struct{Success bool, Data any, Error
+    *ResponseError}. Only success flag is obligatory.
   license:
     name: Apache 2.0
     url: api/license.txt
@@ -65,21 +109,19 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/response.TokenDTO'
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/response.ErrorDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/response.ErrorDTO'
       summary: Email login
       tags:
       - auth
@@ -101,26 +143,68 @@ paths:
         "201":
           description: Created
           schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/response.MessageResponse'
-                error: {}
-              type: object
+            $ref: '#/definitions/response.MessageDTO'
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/response.ErrorDTO'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/response.ErrorDTO'
       summary: Email signup
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      description: Logout the user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.FlagDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
+      summary: Logout
+      tags:
+      - auth
+  /auth/refresh:
+    get:
+      description: Refresh token. Can't be executed in Swagger UI.
+      parameters:
+      - description: 'Refresh token (format: RefreshToken=YOUR_TOKEN)'
+        in: header
+        name: Cookie
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.TokenDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
+      summary: Refresh token
       tags:
       - auth
   /service/authtest:
@@ -147,7 +231,69 @@ paths:
       summary: Health check
       tags:
       - service
+  /user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get user by id or me
+      parameters:
+      - description: User UUID or me for the current user
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UserDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
+      security:
+      - Bearer: []
+      summary: Get user
+      tags:
+      - user
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Get users list
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UsersListDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
+      security:
+      - Bearer: []
+      summary: Get users list
+      tags:
+      - user
 schemes:
 - https
 - http
+securityDefinitions:
+  Bearer:
+    description: Type "Bearer " followed by your JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

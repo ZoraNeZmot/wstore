@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE accounts.upc_create_user_pass(
+CREATE OR REPLACE PROCEDURE accounts.uspcreate_user_pass(
     p_users_id INT,
     p_password TEXT
 ) 
@@ -6,7 +6,7 @@ AS $$
     INSERT INTO accounts.users_pass (users_id, pass) VALUES (p_users_id, p_password);
 $$ LANGUAGE sql;
 
-CREATE OR REPLACE FUNCTION accounts.ufn_get_user_pass(
+CREATE OR REPLACE FUNCTION accounts.usf_get_user_pass(
     p_users_id INT
 ) RETURNS TEXT
 AS $$

@@ -11,3 +11,34 @@ package response
 type FlagDTO struct {
 	Success bool `json:"success"`
 }
+
+type MessageDTO struct {
+	Success bool `json:"success"`
+	Data    struct {
+		Message string `json:"message"`
+	} `json:"data"`
+}
+
+type UsersListDTO struct {
+	Success bool `json:"success"`
+	Data    struct {
+		Users []*UserResponse `json:"users"`
+	} `json:"data"`
+}
+
+type UserDTO struct {
+	Success bool          `json:"success"`
+	Data    *UserResponse `json:"data"`
+}
+
+type TokenDTO struct {
+	Success bool `json:"success"`
+	Data    struct {
+		AccessToken string `json:"accessToken"`
+	} `json:"data"`
+}
+
+type ErrorDTO struct {
+	Success bool           `json:"success"`
+	Error   *ResponseError `json:"error"`
+}

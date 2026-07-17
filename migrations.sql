@@ -7,3 +7,6 @@
 -- Password table and functions
 \i migrations/users/tables/users_pass.sql
 \i migrations/users/functions/pass_f.sql
+-- Tokens table and functions
+\i migrations/users/tables/tokens.sql
+\i migrations/users/functions/tokens_f.sql

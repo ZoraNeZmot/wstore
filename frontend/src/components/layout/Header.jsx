@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../auth/useAuth.js';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import './Header.css';
 
 function Header() {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
 
   return (
     <header className="header">
@@ -28,8 +30,8 @@ function Header() {
           <a href="#" className="header__nav-link">
             {t('cart')}
           </a>
-          <Link to="/login" className="header__nav-link">
-            {t('account')}
+          <Link to={isAuthenticated ? '/account' : '/login'} className="header__nav-link">
+            {t(isAuthenticated ? 'account' : 'signIn')}
           </Link>
           <Link to="/settings" className="header__nav-link">
             {t('settings')}

@@ -29,6 +29,7 @@ go.work.sum
 images/
 certificates/
 roles.sql
+tmp*
 
 # env file
 .env

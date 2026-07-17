@@ -4,13 +4,18 @@ import (
 	"net/http"
 	handlershelp "wstore/internal/handlers/help"
 	"wstore/internal/handlers/help/response"
+
+	"github.com/sirupsen/logrus"
 )
 
 type ServiceHandlers struct {
+	logger *logrus.Entry
 }
 
 func NewServiceHandlers() *ServiceHandlers {
-	return &ServiceHandlers{}
+	return &ServiceHandlers{
+		logger: logrus.WithField("Handler Type", "Service"),
+	}
 }
 
 // Register routes for the service handlers
@@ -18,7 +23,7 @@ func (s *ServiceHandlers) RegisterRoutes(mux *http.ServeMux) error {
 	mux.HandleFunc("/service/health", s.HealthCheck)
 	mux.Handle(
 		"/service/authtest",
-		handlershelp.AuthMiddleware(http.HandlerFunc(s.AuthTest)),
+		handlershelp.AuthMiddleware(s.logger, http.HandlerFunc(s.AuthTest)),
 	)
 
 	return nil

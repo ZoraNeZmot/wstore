@@ -63,3 +63,10 @@ func (d *Database) GetUsers(ctx context.Context) ([]dbusers.User, error) {
 	}
 	return users, nil
 }
+
+func (d *Database) GetUserByUid(ctx context.Context, user *dbusers.User) (*dbusers.User, error) {
+	var userData dbusers.User
+	result := d.QueryRow(ctx, "GetUserByUid", user)
+	err := result.Scan(&userData.ID, &userData.Email, &userData.Name)
+	return &userData, err
+}

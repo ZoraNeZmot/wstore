@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"sync"
 
+	"wstore/cmd/wstore/docs"
+
 	"github.com/caarlos0/env/v11"
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
@@ -92,6 +94,8 @@ func GetConfig() *Config {
 		if err := env.Parse(config); err != nil {
 			logrus.Fatalf("Failed to parse config: %v", err)
 		}
+
+		docs.SwaggerInfo.BasePath = config.ServerConfig.BasePath
 
 		if err := config.DatabaseConfig.openDB(); err != nil {
 			logrus.Fatalf("Failed to open database: %v", err)
