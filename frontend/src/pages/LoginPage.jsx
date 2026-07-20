@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { login as loginRequest } from '../api/auth.js';
 import { ApiError } from '../api/client.js';
+import { getFriendlyError } from '../api/friendlyError.js';
+import ErrorBanner from '../components/ErrorBanner.jsx';
 import { useAuth } from '../auth/useAuth.js';
 import { useTranslation } from '../i18n/useTranslation.js';
 import { validateEmail, validateRequired } from './formValidation.js';
@@ -14,7 +16,7 @@ function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
   if (isAuthenticated) {
@@ -47,7 +49,7 @@ function LoginPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError('');
+    setError(null);
 
     if (!validateForm()) {
       return;
@@ -59,12 +61,12 @@ function LoginPage() {
       const result = await loginRequest({ email: email.trim(), password });
       const accessToken = result.data?.accessToken;
       if (!accessToken) {
-        throw new ApiError(t('authErrorGeneric'));
+        throw new ApiError(t('authErrorGeneric'), { status: 500 });
       }
       login(accessToken);
       navigate('/account');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('authErrorGeneric'));
+      setError(getFriendlyError(err, t));
     } finally {
       setLoading(false);
     }
@@ -130,7 +132,7 @@ function LoginPage() {
             {t('forgotPassword')}
           </a>
 
-          {error ? <p className="login-page__error" role="alert">{error}</p> : null}
+          <ErrorBanner error={error} />
 
           <button type="submit" className="login-page__submit" disabled={loading}>
             {loading ? t('signingIn') : t('signIn')}

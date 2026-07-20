@@ -4,7 +4,7 @@ import (
 	"net/http"
 	authhandlers "wstore/internal/handlers/auth"
 	servicehandlers "wstore/internal/handlers/service"
-	userhandlers "wstore/internal/handlers/user"
+	usershandlers "wstore/internal/handlers/users"
 )
 
 type Handlers interface {
@@ -20,7 +20,7 @@ func RegisterRoutes(mux *http.ServeMux) error {
 	if err := serviceHandlers.RegisterRoutes(mux); err != nil {
 		return err
 	}
-	userHandlers := userhandlers.NewUserHandlers()
+	userHandlers := usershandlers.NewUsersHandlers()
 	if err := userHandlers.RegisterRoutes(mux); err != nil {
 		return err
 	}

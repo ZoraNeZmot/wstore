@@ -15,6 +15,7 @@ export async function apiFetch(path, options = {}) {
     token,
     headers: extraHeaders = {},
     skipAuth = false,
+    responseType = 'json',
   } = options;
 
   const headers = { ...extraHeaders };
@@ -34,13 +35,34 @@ export async function apiFetch(path, options = {}) {
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  let payload = null;
   const contentType = response.headers.get('content-type') || '';
+
+  if (!response.ok) {
+    let errorPayload = null;
+    if (contentType.includes('application/json')) {
+      errorPayload = await response.json();
+    }
+    const error = errorPayload?.error;
+    throw new ApiError(error?.message || `Request failed (${response.status})`, {
+      status: response.status,
+      code: error?.code,
+      details: error?.details,
+    });
+  }
+
+  if (responseType === 'blob') {
+    return {
+      status: response.status,
+      blob: await response.blob(),
+    };
+  }
+
+  let payload = null;
   if (contentType.includes('application/json')) {
     payload = await response.json();
   }
 
-  if (!response.ok || payload?.success === false) {
+  if (payload?.success === false) {
     const error = payload?.error;
     throw new ApiError(error?.message || `Request failed (${response.status})`, {
       status: response.status,

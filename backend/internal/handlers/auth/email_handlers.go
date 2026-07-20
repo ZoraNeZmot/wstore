@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 	handlershelp "wstore/internal/handlers/help"
@@ -70,7 +72,8 @@ func (a *AuthHandlers) EmailSignup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = a.db.CreateUser(
+	// TODO handle id returning
+	id, err := a.db.CreateUser(
 		r.Context(),
 		userData,
 	)
@@ -79,10 +82,47 @@ func (a *AuthHandlers) EmailSignup(w http.ResponseWriter, r *http.Request) {
 		a.logger.Debugf("EmailSignup: Failed to add user: %v", err)
 		return
 	}
+	userData.ID = id
+
+	imageUrl := fmt.Sprintf("https://ui-avatars.com/api/?name=%s&size=256", userData.Name)
+	image, err := a.getImage(imageUrl)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "Server error", "Cannot get image")
+		a.logger.Debugf("EmailSignup: Failed to get image: %v", err)
+		return
+	}
+
+	imagePath := fmt.Sprintf("./images/users/%s.jpg", userData.ID.String())
+	os.MkdirAll(filepath.Dir(imagePath), 0755)
+	err = os.WriteFile(imagePath, image, 0644)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "Server error", "Cannot save image")
+		a.logger.Debugf("EmailSignup: Failed to save image: %v", err)
+		return
+	}
+	err = a.db.CreateUserProfileImage(r.Context(), dbusers.NewUserWithImagePath(userData.ID.String(), imagePath))
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "Server error", "Cannot save user profile image path")
+		a.logger.Debugf("EmailSignup: Failed to save user profile image path: %v", err)
+		return
+	}
 
 	response.Success(w, http.StatusCreated, response.MessageResponse{Message: "User created successfully"})
 
 	// TODO: send email verification
+}
+
+func (a *AuthHandlers) getImageUrl(name string) string {
+	return fmt.Sprintf("https://ui-avatars.com/api/?name=%s&size=256", name)
+}
+
+func (a *AuthHandlers) getImage(url string) ([]byte, error) {
+	response, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+	return io.ReadAll(response.Body)
 }
 
 // @Summary		Email login
@@ -123,14 +163,14 @@ func (a *AuthHandlers) EmailLogin(w http.ResponseWriter, r *http.Request) {
 		}
 
 		response.Error(w, http.StatusInternalServerError, "Server error", "Cannot get user")
-		a.logger.Errorf("EmailLogin: Failed to get user: %v", err)
+		a.logger.Errorf("EmailLogin: Cannot get user: %v", err)
 		return
 	}
 
 	isValid, err := argon2.Verify(user.Password, userData.Password)
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, "Server error", "Cannot verify password")
-		a.logger.Debugf("EmailLogin: Failed to verify password: %v", err)
+		a.logger.Errorf("EmailLogin: Cannot verify password: %v", err)
 		return
 	}
 	if !isValid {

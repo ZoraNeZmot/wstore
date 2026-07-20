@@ -12,6 +12,7 @@ type User struct {
 	Password  string    `json:"password,omitempty"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	ImagePath string    `json:"image_path,omitempty"`
 }
 
 func NewUser(email string, password string, name string) *User {
@@ -28,16 +29,30 @@ func NewUserWithEmail(email string) *User {
 	}
 }
 
-func NewUserWithUid(uid string) *User {
-	uidUUID, err := uuid.Parse(uid)
+func NewUserWithid(id string) *User {
+	idUUID, err := uuid.Parse(id)
 	if err != nil {
 		return nil
 	}
 	return &User{
-		ID:       uidUUID,
+		ID:       idUUID,
 		Email:    "",
 		Password: "",
 		Name:     "",
+	}
+}
+
+func NewUserWithImagePath(id string, imagePath string) *User {
+	idUUID, err := uuid.Parse(id)
+	if err != nil {
+		return nil
+	}
+	return &User{
+		ID:        idUUID,
+		Email:     "",
+		Password:  "",
+		Name:      "",
+		ImagePath: imagePath,
 	}
 }
 
@@ -58,10 +73,14 @@ func (u *User) GetSQLQuery(procName string) (string, []any) {
 		return IsUserExists, []any{u.Email}
 	case "GetUserByEmail":
 		return GetUserByEmail, []any{u.Email}
-	case "GetUserByUid":
-		return GetUserByUid, []any{u.ID}
+	case "GetUserByid":
+		return GetUserByid, []any{u.ID}
 	case "GetUsers":
 		return GetUsers, []any{}
+	case "GetUserProfileImage":
+		return GetUserProfileImage, []any{u.ID}
+	case "CreateUserProfileImage":
+		return CreateUserProfileImage, []any{u.ID, u.ImagePath}
 	default:
 		return "", nil
 	}

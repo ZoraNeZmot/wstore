@@ -41,6 +41,12 @@ type UserResponse struct {
 	Name  string    `json:"name"`
 }
 
+func ImageResponse(w http.ResponseWriter, code int, image []byte) {
+	w.Header().Set("Content-Type", http.DetectContentType(image))
+	w.WriteHeader(code)
+	w.Write(image)
+}
+
 // JSON writes v as JSON with the given code code.
 func JSON(w http.ResponseWriter, code int, v any) {
 	w.Header().Set("Content-Type", "application/json")

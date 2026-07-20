@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { signup as signupRequest } from '../api/auth.js';
-import { ApiError } from '../api/client.js';
+import { getFriendlyError } from '../api/friendlyError.js';
+import ErrorBanner from '../components/ErrorBanner.jsx';
 import { useAuth } from '../auth/useAuth.js';
 import { useTranslation } from '../i18n/useTranslation.js';
 import {
@@ -20,7 +21,7 @@ function RegisterPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
   if (isAuthenticated) {
@@ -55,7 +56,7 @@ function RegisterPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError('');
+    setError(null);
 
     if (!validateForm()) {
       return;
@@ -67,7 +68,7 @@ function RegisterPage() {
       await signupRequest({ name: name.trim(), email: email.trim(), password });
       navigate('/login');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('authErrorGeneric'));
+      setError(getFriendlyError(err, t));
     } finally {
       setLoading(false);
     }
@@ -188,7 +189,7 @@ function RegisterPage() {
             ) : null}
           </label>
 
-          {error ? <p className="login-page__error" role="alert">{error}</p> : null}
+          <ErrorBanner error={error} />
 
           <button type="submit" className="login-page__submit" disabled={loading}>
             {loading ? t('creatingAccount') : t('createAccount')}

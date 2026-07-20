@@ -262,6 +262,37 @@ paths:
       summary: Get user
       tags:
       - user
+  /user/profile-image/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get user profile image by id or me
+      parameters:
+      - description: User UUID or me for the current user
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: binary
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
+      security:
+      - Bearer: []
+      summary: Get user profile image
+      tags:
+      - user
   /users:
     get:
       consumes:

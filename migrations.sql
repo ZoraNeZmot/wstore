@@ -10,3 +10,6 @@
 -- Tokens table and functions
 \i migrations/users/tables/tokens.sql
 \i migrations/users/functions/tokens_f.sql
+-- Users images table and functions
+\i migrations/users/tables/users_images.sql
+\i migrations/users/functions/images_f.sql

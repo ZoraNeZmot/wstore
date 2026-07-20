@@ -1,5 +1,5 @@
-CREATE OR REPLACE PROCEDURE accounts.uspcreate_user_pass(
-    p_users_id INT,
+CREATE OR REPLACE PROCEDURE accounts.usp_create_user_pass(
+    p_users_id uuid,
     p_password TEXT
 ) 
 AS $$
@@ -7,7 +7,7 @@ AS $$
 $$ LANGUAGE sql;
 
 CREATE OR REPLACE FUNCTION accounts.usf_get_user_pass(
-    p_users_id INT
+    p_users_id uuid
 ) RETURNS TEXT
 AS $$
     SELECT pass FROM accounts.users_pass WHERE users_id = p_users_id;

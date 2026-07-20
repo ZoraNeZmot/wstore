@@ -32,18 +32,16 @@ func (d *Database) IsUserExists(ctx context.Context, user *dbusers.User) bool {
 	return exists
 }
 
-func (d *Database) CreateUser(ctx context.Context, user *dbusers.User) (int64, error) {
-	_, err := d.ExecQuery(ctx, "CreateUser", user)
-	if err != nil {
-		return 0, err
-	}
-	return 1, nil
+func (d *Database) CreateUser(ctx context.Context, user *dbusers.User) (uuid.UUID, error) {
+	var id uuid.UUID
+	err := d.QueryRow(ctx, "CreateUser", user).Scan(&id)
+	return id, err
 }
 
 func (d *Database) CreateOAuthUser(ctx context.Context, user *dbusers.User) (uuid.UUID, error) {
-	var uid uuid.UUID
-	err := d.QueryRow(ctx, "CreateOAuthUser", user).Scan(&uid)
-	return uid, err
+	var id uuid.UUID
+	err := d.QueryRow(ctx, "CreateOAuthUser", user).Scan(&id)
+	return id, err
 }
 
 func (d *Database) GetUsers(ctx context.Context) ([]dbusers.User, error) {
@@ -64,9 +62,21 @@ func (d *Database) GetUsers(ctx context.Context) ([]dbusers.User, error) {
 	return users, nil
 }
 
-func (d *Database) GetUserByUid(ctx context.Context, user *dbusers.User) (*dbusers.User, error) {
+func (d *Database) GetUserByid(ctx context.Context, user *dbusers.User) (*dbusers.User, error) {
 	var userData dbusers.User
-	result := d.QueryRow(ctx, "GetUserByUid", user)
+	result := d.QueryRow(ctx, "GetUserByid", user)
 	err := result.Scan(&userData.ID, &userData.Email, &userData.Name)
 	return &userData, err
+}
+
+func (d *Database) GetUserProfileImage(ctx context.Context, user *dbusers.User) (string, error) {
+	var imagePath string
+	result := d.QueryRow(ctx, "GetUserProfileImage", user)
+	err := result.Scan(&imagePath)
+	return imagePath, err
+}
+
+func (d *Database) CreateUserProfileImage(ctx context.Context, user *dbusers.User) error {
+	_, err := d.ExecQuery(ctx, "CreateUserProfileImage", user)
+	return err
 }

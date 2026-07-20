@@ -128,13 +128,13 @@ func (a *AuthHandlers) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		uid, createErr := a.db.CreateOAuthUser(r.Context(), dbusers.NewOAuthUser(email, name))
+		id, createErr := a.db.CreateOAuthUser(r.Context(), dbusers.NewOAuthUser(email, name))
 		if createErr != nil {
 			log.WithError(createErr).Error("Failed to create OAuth user")
 			fail("Failed to create user. Try again later")
 			return
 		}
-		userData = &dbusers.User{ID: uid, Email: email, Name: name}
+		userData = &dbusers.User{ID: id, Email: email, Name: name}
 	}
 
 	tokenString, err := token.GenerateToken(token.TokenClaims{

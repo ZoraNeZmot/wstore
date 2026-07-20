@@ -6,3 +6,11 @@ export function getCurrentUser(token) {
     token,
   });
 }
+
+export function getProfileImage(token) {
+  return apiFetch('/api/user/profile-image/me', {
+    method: 'GET',
+    token,
+    responseType: 'blob',
+  });
+}

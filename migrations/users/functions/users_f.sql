@@ -3,13 +3,13 @@ CREATE OR REPLACE FUNCTION accounts.usf_create_user(
     p_email text,
     p_password text,
     p_name text
-) RETURNS INT
+) RETURNS uuid
 AS $$
 DECLARE 
-   v_user_id INT;
+   v_user_id uuid;
 BEGIN
     INSERT INTO accounts.users (email, name) VALUES (p_email, p_name) RETURNING id INTO v_user_id;
-    CALL accounts.uspcreate_user_pass(v_user_id, p_password);
+    CALL accounts.usp_create_user_pass(v_user_id, p_password);
 
     RETURN v_user_id;
 END;
@@ -22,13 +22,13 @@ CREATE OR REPLACE FUNCTION accounts.usf_create_oauth_user(
 ) RETURNS uuid
 AS $$
 DECLARE
-    v_uid uuid;
+    v_id uuid;
 BEGIN
     INSERT INTO accounts.users (email, name, email_verified)
     VALUES (p_email, p_name, TRUE)
-    RETURNING uid INTO v_uid;
+    RETURNING id INTO v_id;
 
-    RETURN v_uid;
+    RETURN v_id;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -47,24 +47,24 @@ BEGIN
         RETURN;
     END IF;
     v_pass := COALESCE(accounts.usf_get_user_pass(v_user.id), '');
-    RETURN QUERY SELECT v_user.uid, v_user.email, v_pass, v_user.name;
+    RETURN QUERY SELECT v_user.id, v_user.email, v_pass, v_user.name;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION accounts.usf_get_user_by_uid(
-    p_uid uuid
+CREATE OR REPLACE FUNCTION accounts.usf_get_user_by_id(
+    p_id uuid
 ) RETURNS table (id uuid, email TEXT, pass TEXT, name TEXT) 
 AS $$
 DECLARE
     v_user accounts.users;
     v_pass text;
 BEGIN
-    SELECT * FROM accounts.users WHERE users.uid = p_uid INTO v_user;
+    SELECT * FROM accounts.users WHERE users.id = p_id INTO v_user;
     IF NOT FOUND THEN
         RETURN;
     END IF;
     v_pass := COALESCE(accounts.usf_get_user_pass(v_user.id), '');
-    RETURN QUERY SELECT v_user.uid, v_user.email, v_pass, v_user.name;
+    RETURN QUERY SELECT v_user.id, v_user.email, v_pass, v_user.name;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -78,8 +78,8 @@ AS $$
 $$ LANGUAGE sql;
 
 CREATE OR REPLACE FUNCTION accounts.usf_is_user_exists(
-    p_uid uuid
+    p_id uuid
 ) RETURNS boolean
 AS $$
-    SELECT EXISTS (SELECT 1 FROM accounts.users WHERE uid = p_uid);
+    SELECT EXISTS (SELECT 1 FROM accounts.users WHERE id = p_id);
 $$ LANGUAGE sql;
