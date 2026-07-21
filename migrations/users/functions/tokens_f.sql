@@ -13,28 +13,28 @@ CREATE OR REPLACE PROCEDURE accounts.usp_revoke_token_user(
     p_user_id uuid
 ) 
 AS $$
-    UPDATE accounts.tokens SET valid = FALSE WHERE user_id = p_user_id;
+    UPDATE accounts.tokens SET is_valid = FALSE WHERE user_id = p_user_id;
 $$ LANGUAGE sql;
 
 CREATE OR REPLACE PROCEDURE accounts.usp_revoke_token(
     p_token text
 ) 
 AS $$
-    UPDATE accounts.tokens SET valid = FALSE WHERE token = p_token;
+    UPDATE accounts.tokens SET is_valid = FALSE WHERE token = p_token;
 $$ LANGUAGE sql;
 
 CREATE OR REPLACE FUNCTION accounts.usf_is_token_valid(
     p_token text
 ) RETURNS boolean
 AS $$
-    SELECT valid FROM accounts.tokens WHERE token = p_token AND expires_at > CURRENT_TIMESTAMP AND valid = TRUE;
+    SELECT is_valid FROM accounts.tokens WHERE token = p_token AND expires_at > CURRENT_TIMESTAMP AND is_valid = TRUE;
 $$ LANGUAGE sql;
 
 CREATE OR REPLACE FUNCTION accounts.usf_is_token_valid_user(
     p_user_id uuid
 ) RETURNS boolean
 AS $$
-    SELECT valid FROM accounts.tokens WHERE user_id = p_user_id AND expires_at > CURRENT_TIMESTAMP AND valid = TRUE;
+    SELECT is_valid FROM accounts.tokens WHERE user_id = p_user_id AND expires_at > CURRENT_TIMESTAMP AND is_valid = TRUE;
 $$ LANGUAGE sql;
 
 CREATE OR REPLACE FUNCTION accounts.usf_remove_invalid_tokens()
@@ -44,7 +44,7 @@ DECLARE
     v_row_count integer;
 BEGIN
     DELETE FROM accounts.tokens 
-    WHERE expires_at < CURRENT_TIMESTAMP OR valid = FALSE;
+    WHERE expires_at < CURRENT_TIMESTAMP OR is_valid = FALSE;
     GET DIAGNOSTICS v_row_count = ROW_COUNT;
     RETURN v_row_count;
 END;

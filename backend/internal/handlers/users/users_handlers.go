@@ -110,7 +110,7 @@ func (u *UsersHandlers) GetUser(w http.ResponseWriter, r *http.Request) {
 // @Accept			json
 // @Produce		image/png
 // @Param			id	path		string	true	"User UUID or me for the current user"	pattern(^(me|[0-9a-fA-F-]{36})$)
-// @Success		200	{binary}	[]byte	image/png
+// @Success		200	{binary}	[]byte image/jpeg
 // @Failure		401	{object}	response.ErrorDTO
 // @Failure		500	{object}	response.ErrorDTO
 // @Router			/user/profile-image/{id} [get]
