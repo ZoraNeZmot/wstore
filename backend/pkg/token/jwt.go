@@ -8,16 +8,17 @@ import (
 	"wstore/internal/config"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 type TokenClaims struct {
-	UserID string `json:"user_id"`
-	Email  string `json:"email"`
-	Name   string `json:"name,omitempty"`
+	UserID uuid.UUID `json:"user_id"`
+	Email  string    `json:"email"`
+	Name   string    `json:"name,omitempty"`
 	jwt.RegisteredClaims
 }
 
-func NewTokenClaims(userID string, email string, name string, exp time.Time) TokenClaims {
+func NewTokenClaims(userID uuid.UUID, email string, name string, exp time.Time) TokenClaims {
 	return TokenClaims{
 		UserID: userID,
 		Email:  email,

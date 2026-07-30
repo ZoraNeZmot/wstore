@@ -19,6 +19,12 @@ type MessageDTO struct {
 	} `json:"data"`
 }
 
+type ErrorDTO struct {
+	Success bool           `json:"success"`
+	Error   *ResponseError `json:"error"`
+}
+
+// USERS DTOs
 type UsersListDTO struct {
 	Success bool `json:"success"`
 	Data    struct {
@@ -38,7 +44,15 @@ type TokenDTO struct {
 	} `json:"data"`
 }
 
-type ErrorDTO struct {
-	Success bool           `json:"success"`
-	Error   *ResponseError `json:"error"`
+// SALES DTOs
+type ItemsListDTO struct {
+	Success bool `json:"success"`
+	Data    struct {
+		Items []*ItemResponse `json:"items"`
+	} `json:"data"`
+}
+
+type ItemDTO struct {
+	Success bool          `json:"success"`
+	Data    *ItemResponse `json:"data"`
 }

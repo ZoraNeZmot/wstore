@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	authhandlers "wstore/internal/handlers/auth"
+	saleshandlers "wstore/internal/handlers/sales"
 	servicehandlers "wstore/internal/handlers/service"
 	usershandlers "wstore/internal/handlers/users"
 )
@@ -22,6 +23,10 @@ func RegisterRoutes(mux *http.ServeMux) error {
 	}
 	userHandlers := usershandlers.NewUsersHandlers()
 	if err := userHandlers.RegisterRoutes(mux); err != nil {
+		return err
+	}
+	salesHandlers := saleshandlers.NewSalesHandlers()
+	if err := salesHandlers.RegisterRoutes(mux); err != nil {
 		return err
 	}
 	return nil

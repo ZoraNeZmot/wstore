@@ -29,26 +29,18 @@ func NewUserWithEmail(email string) *User {
 	}
 }
 
-func NewUserWithid(id string) *User {
-	idUUID, err := uuid.Parse(id)
-	if err != nil {
-		return nil
-	}
+func NewUserWithid(id uuid.UUID) *User {
 	return &User{
-		ID:       idUUID,
+		ID:       id,
 		Email:    "",
 		Password: "",
 		Name:     "",
 	}
 }
 
-func NewUserWithImagePath(id string, imagePath string) *User {
-	idUUID, err := uuid.Parse(id)
-	if err != nil {
-		return nil
-	}
+func NewUserWithImagePath(id uuid.UUID, imagePath string) *User {
 	return &User{
-		ID:        idUUID,
+		ID:        id,
 		Email:     "",
 		Password:  "",
 		Name:      "",

@@ -92,7 +92,7 @@ func (a *AuthHandlers) EmailSignup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	imagePath := fmt.Sprintf("./images/users/%s.jpg", userData.ID.String())
+	imagePath := fmt.Sprintf("./images/users/%s.jpg", userData.ID)
 	os.MkdirAll(filepath.Dir(imagePath), 0755)
 	err = os.WriteFile(imagePath, image, 0644)
 	if err != nil {
@@ -100,7 +100,7 @@ func (a *AuthHandlers) EmailSignup(w http.ResponseWriter, r *http.Request) {
 		a.logger.Debugf("EmailSignup: Failed to save image: %v", err)
 		return
 	}
-	err = a.db.CreateUserProfileImage(r.Context(), dbusers.NewUserWithImagePath(userData.ID.String(), imagePath))
+	err = a.db.CreateUserProfileImage(r.Context(), dbusers.NewUserWithImagePath(userData.ID, imagePath))
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, "Server error", "Cannot save user profile image path")
 		a.logger.Debugf("EmailSignup: Failed to save user profile image path: %v", err)
@@ -180,7 +180,7 @@ func (a *AuthHandlers) EmailLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	refreshToken, err := token.GenerateToken(token.NewTokenClaims(
-		userData.ID.String(),
+		userData.ID,
 		userData.Email,
 		userData.Name,
 		time.Now().Add(time.Hour*30*24)),
@@ -199,7 +199,7 @@ func (a *AuthHandlers) EmailLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	accessToken, err := token.GenerateToken(token.NewTokenClaims(
-		userData.ID.String(),
+		userData.ID,
 		userData.Email,
 		userData.Name,
 		time.Now().Add(time.Minute*15),

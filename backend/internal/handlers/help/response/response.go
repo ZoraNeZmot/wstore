@@ -41,6 +41,16 @@ type UserResponse struct {
 	Name  string    `json:"name"`
 }
 
+type ItemResponse struct {
+	ID          uuid.UUID `json:"id"`
+	SellerID    uuid.UUID `json:"seller_id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Price       float64   `json:"price"`
+	Quantity    int       `json:"quantity"`
+	Status      string    `json:"status"`
+}
+
 func ImageResponse(w http.ResponseWriter, code int, image []byte) {
 	w.Header().Set("Content-Type", http.DetectContentType(image))
 	w.WriteHeader(code)

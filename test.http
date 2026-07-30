@@ -1,0 +1,2 @@
+GET https://localhost:8080/api/sales/items/630a20d3-96d5-4e61-ad37-c08e5f940b7a
+Host: localhost:8080

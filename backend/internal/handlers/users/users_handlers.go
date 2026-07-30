@@ -71,13 +71,14 @@ func (u *UsersHandlers) GetUsersList(w http.ResponseWriter, r *http.Request) {
 // @Router			/user/{id} [get]
 // @Security		Bearer
 func (u *UsersHandlers) GetUser(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-	var (
-		user *dbusers.User
-		err  error
-	)
-
-	switch id {
+	id, err := handlershelp.GetUUIDFromPath(r, "id")
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, "Bad Request", "Failed to get user ID")
+		u.logger.WithError(err).Debug("Failed to get user ID")
+		return
+	}
+	var user *dbusers.User
+	switch id.String() {
 	case "me":
 		claims, ok := r.Context().Value("claims").(*tokenpkg.TokenClaims)
 		if !ok {
@@ -88,7 +89,7 @@ func (u *UsersHandlers) GetUser(w http.ResponseWriter, r *http.Request) {
 		user, err = u.db.GetUserByEmail(r.Context(), dbusers.NewUserWithEmail(claims.Email))
 		if err != nil {
 			response.Error(w, http.StatusInternalServerError, "Server error", "Cannot get user")
-			u.logger.WithError(err).Debug("Cannot get user")
+			u.logger.WithError(err).Error("Cannot get user")
 			return
 		}
 		user.Password = ""
@@ -96,7 +97,7 @@ func (u *UsersHandlers) GetUser(w http.ResponseWriter, r *http.Request) {
 		user, err = u.db.GetUserByid(r.Context(), dbusers.NewUserWithid(id))
 		if err != nil {
 			response.Error(w, http.StatusInternalServerError, "Server error", "Cannot get user")
-			u.logger.WithError(err).Debug("Cannot get user")
+			u.logger.WithError(err).Error("Cannot get user")
 			return
 		}
 		user.Password = ""
@@ -110,15 +111,20 @@ func (u *UsersHandlers) GetUser(w http.ResponseWriter, r *http.Request) {
 // @Accept			json
 // @Produce		image/png
 // @Param			id	path		string	true	"User UUID or me for the current user"	pattern(^(me|[0-9a-fA-F-]{36})$)
-// @Success		200	{binary}	[]byte image/jpeg
+// @Success		200	{binary}	[]byte	image/jpeg
 // @Failure		401	{object}	response.ErrorDTO
 // @Failure		500	{object}	response.ErrorDTO
 // @Router			/user/profile-image/{id} [get]
 // @Security		Bearer
 func (u *UsersHandlers) GetUserProfileImage(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
+	id, err := handlershelp.GetUUIDFromPath(r, "id")
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, "Bad Request", "Failed to get user ID")
+		u.logger.WithError(err).Debug("Failed to get user ID")
+		return
+	}
 
-	switch id {
+	switch id.String() {
 	case "me":
 		claims, ok := r.Context().Value("claims").(*tokenpkg.TokenClaims)
 		if !ok {

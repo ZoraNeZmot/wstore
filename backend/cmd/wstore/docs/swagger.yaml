@@ -21,6 +21,42 @@ definitions:
       success:
         type: boolean
     type: object
+  response.ItemDTO:
+    properties:
+      data:
+        $ref: '#/definitions/response.ItemResponse'
+      success:
+        type: boolean
+    type: object
+  response.ItemResponse:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      price:
+        type: number
+      quantity:
+        type: integer
+      seller_id:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+    type: object
+  response.ItemsListDTO:
+    properties:
+      data:
+        properties:
+          items:
+            items:
+              $ref: '#/definitions/response.ItemResponse'
+            type: array
+        type: object
+      success:
+        type: boolean
+    type: object
   response.MessageDTO:
     properties:
       data:
@@ -207,6 +243,64 @@ paths:
       summary: Refresh token
       tags:
       - auth
+  /sales/items:
+    get:
+      description: Get items
+      parameters:
+      - default: 10
+        description: Amount of items to return
+        in: query
+        name: amount
+        type: integer
+      - description: Seller ID
+        in: query
+        name: seller_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Items list
+          schema:
+            $ref: '#/definitions/response.ItemsListDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
+        "500":
+          description: Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
+      summary: Get items
+      tags:
+      - sales
+  /sales/items/{id}:
+    get:
+      description: Get item by ID
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Item
+          schema:
+            $ref: '#/definitions/response.ItemDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
+        "500":
+          description: Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
+      summary: Get item
+      tags:
+      - sales
   /service/authtest:
     get:
       description: Test if the user is authorized
