@@ -1,3 +1,18 @@
+CREATE TABLE IF NOT EXISTS sales.items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    seller_id UUID NOT NULL ,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    quantity INT NOT NULL,
+    status sales.item_status NOT NULL DEFAULT 'draft',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_seller_id FOREIGN KEY (seller_id) REFERENCES accounts.users(id) ON DELETE CASCADE
+);
+
+-- FUNCTIONS
+
 CREATE OR REPLACE FUNCTION sales.usf_create_item(
     p_seller_id UUID, 
     p_title VARCHAR(255),
@@ -90,5 +105,36 @@ RETURNS TABLE(
 AS $$
 BEGIN
     RETURN QUERY SELECT i.id, i.seller_id, i.title, i.price, i.status FROM sales.items AS i LIMIT p_amount;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Get items by search (title, description)
+CREATE OR REPLACE FUNCTION sales.usf_get_items_by_search(
+    p_query TEXT,
+    p_amount INT DEFAULT 10
+)
+RETURNS TABLE(
+    id UUID,
+    seller_id UUID,
+    title VARCHAR(255),
+    price DECIMAL(10, 2),
+    status sales.item_status
+)
+AS $$
+BEGIN
+    RETURN QUERY SELECT i.id, i.seller_id, i.title, i.price, i.status FROM sales.items AS i WHERE to_tsvector('english', i.title || ' ' || i.description) @@ plainto_tsquery('english', p_query) ORDER BY ts_rank(setweight(to_tsvector('english', i.title), 'A') || setweight(to_tsvector(i.description), 'b'), plainto_tsquery('english', p_query)) DESC LIMIT p_amount;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Check if item exists and is owned by the user
+CREATE OR REPLACE FUNCTION sales.usf_check_item_ownership(
+    p_item_id UUID,
+    p_seller_id UUID
+)
+RETURNS BOOLEAN
+AS $$
+BEGIN
+    RETURN EXISTS (SELECT 1 FROM sales.items AS i WHERE i.id = p_item_id AND i.seller_id = p_seller_id);
 END;
 $$ LANGUAGE plpgsql;

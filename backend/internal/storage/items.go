@@ -53,3 +53,32 @@ func (d *Database) GetItem(ctx context.Context, item *dbitems.Item) (*dbitems.It
 	}
 	return item, nil
 }
+
+func (d *Database) GetItemsBySearch(ctx context.Context, item *dbitems.Item) ([]*dbitems.Item, error) {
+	items := make([]*dbitems.Item, 0)
+	rows, err := d.Query(ctx, "GetItemsBySearch", item)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		item := &dbitems.Item{}
+		err := rows.Scan(&item.ID, &item.SellerID, &item.Title, &item.Price, &item.Status)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, nil
+}
+
+func (d *Database) CheckItemOwnership(ctx context.Context, item *dbitems.Item) (bool, error) {
+	row := d.QueryRow(ctx, "CheckItemOwnership", item)
+	var isOwner bool
+	err := row.Scan(&isOwner)
+	if err != nil {
+		return false, err
+	}
+	return isOwner, nil
+}

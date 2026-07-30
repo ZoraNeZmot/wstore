@@ -49,10 +49,12 @@ type LogConfig struct {
 type DatabaseConfig struct {
 	Host     string `env:"HOST" envDefault:"localhost"`
 	Port     int    `env:"PORT" envDefault:"5432"`
-	User     string `env:"USER,required" envDefault:"postgres"`
-	Password string `env:"PASSWORD,required" envDefault:"postgres"`
+	User     string `env:"USER,required"`
+	Password string `env:"PASSWORD,required"`
 	Database string `env:"DATABASE,required" envDefault:"wstore"`
 	db       *sql.DB
+
+	ItemsImagesPath string `env:"ITEMS_IMAGES_PATH" envDefault:"images/items/"`
 }
 
 func (c *DatabaseConfig) GetDB() *sql.DB {

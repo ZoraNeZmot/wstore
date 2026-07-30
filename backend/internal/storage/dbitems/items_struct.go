@@ -7,6 +7,7 @@ import (
 )
 
 type ItemStatus string
+type ItemOpt func(*Item)
 
 const (
 	ItemStatusDraft    ItemStatus = "draft"
@@ -36,35 +37,72 @@ type Item struct {
 	UpdatedAt   time.Time  `json:"updated_at,omitzero"`
 	// Functinal fields
 	amount int
+	query  string
 }
 
-func NewItem(sellerID uuid.UUID, title string, description string, price float64, quantity int, status ItemStatus) *Item {
-	return &Item{
-		SellerID:    sellerID,
-		Title:       title,
-		Description: description,
-		Price:       price,
-		Quantity:    quantity,
-		Status:      status,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+func WithAmount(amount int) ItemOpt {
+	return func(i *Item) {
+		i.amount = amount
 	}
 }
 
-func NewWithAmount(amount int) *Item {
-	return &Item{amount: amount}
+func WithQuery(query string) ItemOpt {
+	return func(i *Item) {
+		i.query = query
+	}
 }
 
-func NewWithSellerIDAndAmount(sellerID uuid.UUID, amount int) *Item {
-	return &Item{SellerID: sellerID, amount: amount}
+func WithSellerID(sellerID uuid.UUID) ItemOpt {
+	return func(i *Item) {
+		i.SellerID = sellerID
+	}
 }
 
-func NewWithSellerID(sellerID uuid.UUID) *Item {
-	return &Item{SellerID: sellerID}
+func WithID(id uuid.UUID) ItemOpt {
+	return func(i *Item) {
+		i.ID = id
+	}
 }
 
-func NewWithID(id uuid.UUID) *Item {
-	return &Item{ID: id}
+func WithDescription(description string) ItemOpt {
+	return func(i *Item) {
+		i.Description = description
+	}
+}
+
+func WithTitle(title string) ItemOpt {
+	return func(i *Item) {
+		i.Title = title
+	}
+}
+
+func WithPrice(price float64) ItemOpt {
+	return func(i *Item) {
+		i.Price = price
+	}
+}
+
+func WithQuantity(quantity int) ItemOpt {
+	return func(i *Item) {
+		i.Quantity = quantity
+	}
+}
+
+func WithStatus(status ItemStatus) ItemOpt {
+	return func(i *Item) {
+		i.Status = status
+	}
+}
+
+func NewItem(opts ...ItemOpt) *Item {
+	item := &Item{
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	for _, opt := range opts {
+		opt(item)
+	}
+	return item
 }
 
 func (i *Item) GetSQLQuery(procName string) (string, []any) {
@@ -76,6 +114,10 @@ func (i *Item) GetSQLQuery(procName string) (string, []any) {
 		return GetItems, []any{i.amount}
 	case "GetItem":
 		return GetItem, []any{i.ID}
+	case "GetItemsBySearch":
+		return GetItemsBySearch, []any{i.query, i.amount}
+	case "CheckItemOwnership":
+		return CheckItemOwnership, []any{i.ID, i.SellerID}
 	default:
 		return "", []any{}
 	}

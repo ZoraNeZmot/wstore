@@ -6,6 +6,8 @@ import (
 	"github.com/google/uuid"
 )
 
+type UserOpt func(*User)
+
 type User struct {
 	ID        uuid.UUID `json:"id"`
 	Email     string    `json:"email"`
@@ -15,44 +17,50 @@ type User struct {
 	ImagePath string    `json:"image_path,omitempty"`
 }
 
-func NewUser(email string, password string, name string) *User {
-	return &User{
-		Email:    email,
-		Password: password,
-		Name:     name,
+func WithEmail(email string) UserOpt {
+	return func(u *User) {
+		u.Email = email
 	}
 }
 
-func NewUserWithEmail(email string) *User {
-	return &User{
-		Email: email,
+func WithPassword(password string) UserOpt {
+	return func(u *User) {
+		u.Password = password
 	}
 }
 
-func NewUserWithid(id uuid.UUID) *User {
-	return &User{
-		ID:       id,
-		Email:    "",
-		Password: "",
-		Name:     "",
+func WithName(name string) UserOpt {
+	return func(u *User) {
+		u.Name = name
 	}
 }
 
-func NewUserWithImagePath(id uuid.UUID, imagePath string) *User {
-	return &User{
-		ID:        id,
-		Email:     "",
-		Password:  "",
-		Name:      "",
-		ImagePath: imagePath,
+func WithCreatedAt(createdAt time.Time) UserOpt {
+	return func(u *User) {
+		u.CreatedAt = createdAt
 	}
 }
 
-func NewOAuthUser(email string, name string) *User {
-	return &User{
-		Email: email,
-		Name:  name,
+func WithImagePath(imagePath string) UserOpt {
+	return func(u *User) {
+		u.ImagePath = imagePath
 	}
+}
+
+func WithID(id uuid.UUID) UserOpt {
+	return func(u *User) {
+		u.ID = id
+	}
+}
+
+func NewUser(opts ...UserOpt) *User {
+	user := &User{
+		CreatedAt: time.Now(),
+	}
+	for _, opt := range opts {
+		opt(user)
+	}
+	return user
 }
 
 func (u *User) GetSQLQuery(procName string) (string, []any) {

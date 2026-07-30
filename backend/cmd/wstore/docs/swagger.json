@@ -243,6 +243,107 @@
                 }
             }
         },
+        "/sales/items/images/{id}": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create item image for item by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sales"
+                ],
+                "summary": "Create item image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Image",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Image ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ImageIDResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/sales/items/search": {
+            "get": {
+                "description": "Get items by search",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sales"
+                ],
+                "summary": "Get items by search",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Query",
+                        "name": "query",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Amount of items to return",
+                        "name": "amount",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Items list",
+                        "schema": {
+                            "$ref": "#/definitions/response.ItemsListDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorDTO"
+                        }
+                    }
+                }
+            }
+        },
         "/sales/items/{id}": {
             "get": {
                 "description": "Get item by ID",
@@ -323,7 +424,7 @@
                 }
             }
         },
-        "/user/profile-image/{id}": {
+        "/user/images/{id}": {
             "get": {
                 "security": [
                     {
@@ -493,6 +594,23 @@
             "properties": {
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "response.ImageIDResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
                 }
             }
         },

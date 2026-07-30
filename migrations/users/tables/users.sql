@@ -1,8 +1,0 @@
-CREATE TABLE IF NOT EXISTS accounts.users (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    email text NOT NULL UNIQUE,
-    name text NOT NULL,
-    email_verified boolean NOT NULL DEFAULT FALSE,
-    created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-);

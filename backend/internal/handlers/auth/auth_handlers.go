@@ -70,7 +70,7 @@ func (a *AuthHandlers) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		a.logger.Debug("Refresh token is empty")
 		return
 	}
-	tokenData := dbtokens.NewTokenWithToken(refreshToken.Value)
+	tokenData := dbtokens.NewToken(dbtokens.WithToken(refreshToken.Value))
 	valid, err := a.db.IsTokenValid(r.Context(), tokenData)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -136,7 +136,7 @@ func (a *AuthHandlers) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenData := dbtokens.NewTokenWithToken(refreshToken.Value)
+	tokenData := dbtokens.NewToken(dbtokens.WithToken(refreshToken.Value))
 	err = a.db.RevokeToken(r.Context(), tokenData)
 	if err != nil {
 		a.logger.WithError(err).Debug("Failed to revoke token from database")

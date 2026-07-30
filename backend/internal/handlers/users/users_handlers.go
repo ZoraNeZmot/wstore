@@ -8,7 +8,6 @@ import (
 	"wstore/internal/handlers/help/response"
 	"wstore/internal/storage"
 	"wstore/internal/storage/dbusers"
-	tokenpkg "wstore/pkg/token"
 
 	"github.com/sirupsen/logrus"
 )
@@ -35,7 +34,7 @@ func (u *UsersHandlers) RegisterRoutes(mux *http.ServeMux) error {
 	)
 
 	mux.Handle("/user/{id}", handlershelp.AuthMiddleware(u.logger, http.HandlerFunc(u.GetUser)))
-	mux.Handle("/user/profile-image/{id}", handlershelp.AuthMiddleware(u.logger, http.HandlerFunc(u.GetUserProfileImage)))
+	mux.Handle("/user/images/{id}", handlershelp.AuthMiddleware(u.logger, http.HandlerFunc(u.GetUserProfileImage)))
 	return nil
 }
 
@@ -71,22 +70,23 @@ func (u *UsersHandlers) GetUsersList(w http.ResponseWriter, r *http.Request) {
 // @Router			/user/{id} [get]
 // @Security		Bearer
 func (u *UsersHandlers) GetUser(w http.ResponseWriter, r *http.Request) {
-	id, err := handlershelp.GetUUIDFromPath(r, "id")
+	id, err := handlershelp.GetStringFromQuery(r, "id")
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Bad Request", "Failed to get user ID")
 		u.logger.WithError(err).Debug("Failed to get user ID")
 		return
 	}
 	var user *dbusers.User
-	switch id.String() {
+	switch id {
 	case "me":
-		claims, ok := r.Context().Value("claims").(*tokenpkg.TokenClaims)
-		if !ok {
+		claims, err := handlershelp.GetClaimsFromContext(r)
+		if err != nil {
 			response.Error(w, http.StatusBadRequest, "Bad Request", "Failed to get token claims")
-			u.logger.Debug("Failed to get token claims")
+			u.logger.WithError(err).Debug("Failed to get token claims")
 			return
 		}
-		user, err = u.db.GetUserByEmail(r.Context(), dbusers.NewUserWithEmail(claims.Email))
+
+		user, err = u.db.GetUserByEmail(r.Context(), dbusers.NewUser(dbusers.WithEmail(claims.Email)))
 		if err != nil {
 			response.Error(w, http.StatusInternalServerError, "Server error", "Cannot get user")
 			u.logger.WithError(err).Error("Cannot get user")
@@ -94,7 +94,13 @@ func (u *UsersHandlers) GetUser(w http.ResponseWriter, r *http.Request) {
 		}
 		user.Password = ""
 	default:
-		user, err = u.db.GetUserByid(r.Context(), dbusers.NewUserWithid(id))
+		id, err := handlershelp.GetUUIDFromPath(r, "id")
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "Bad Request", "Failed to get user ID")
+			u.logger.WithError(err).Debug("Failed to get user ID")
+			return
+		}
+		user, err = u.db.GetUserByid(r.Context(), dbusers.NewUser(dbusers.WithID(id)))
 		if err != nil {
 			response.Error(w, http.StatusInternalServerError, "Server error", "Cannot get user")
 			u.logger.WithError(err).Error("Cannot get user")
@@ -114,7 +120,7 @@ func (u *UsersHandlers) GetUser(w http.ResponseWriter, r *http.Request) {
 // @Success		200	{binary}	[]byte	image/jpeg
 // @Failure		401	{object}	response.ErrorDTO
 // @Failure		500	{object}	response.ErrorDTO
-// @Router			/user/profile-image/{id} [get]
+// @Router			/user/images/{id} [get]
 // @Security		Bearer
 func (u *UsersHandlers) GetUserProfileImage(w http.ResponseWriter, r *http.Request) {
 	id, err := handlershelp.GetUUIDFromPath(r, "id")
@@ -126,13 +132,13 @@ func (u *UsersHandlers) GetUserProfileImage(w http.ResponseWriter, r *http.Reque
 
 	switch id.String() {
 	case "me":
-		claims, ok := r.Context().Value("claims").(*tokenpkg.TokenClaims)
-		if !ok {
+		claims, err := handlershelp.GetClaimsFromContext(r)
+		if err != nil {
 			response.Error(w, http.StatusBadRequest, "Bad Request", "Failed to get token claims")
-			u.logger.Debug("Failed to get token claims")
+			u.logger.WithError(err).Debug("Failed to get token claims")
 			return
 		}
-		imagePath, err := u.db.GetUserProfileImage(r.Context(), dbusers.NewUserWithid(claims.UserID))
+		imagePath, err := u.db.GetUserProfileImage(r.Context(), dbusers.NewUser(dbusers.WithID(claims.UserID)))
 		if err != nil {
 			response.Error(w, http.StatusInternalServerError, "Server error", "Cannot get user profile image")
 			u.logger.WithError(err).Debug("Cannot get user profile image. User not found.")

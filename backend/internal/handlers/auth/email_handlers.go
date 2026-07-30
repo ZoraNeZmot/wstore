@@ -64,7 +64,11 @@ func (a *AuthHandlers) EmailSignup(w http.ResponseWriter, r *http.Request) {
 	user.Password = string(hashPassword)
 	user.Name = handlershelp.FormatPersonName(user.Name)
 
-	userData := dbusers.NewUser(user.Email, user.Password, user.Name)
+	userData := dbusers.NewUser(
+		dbusers.WithEmail(user.Email),
+		dbusers.WithPassword(user.Password),
+		dbusers.WithName(user.Name),
+	)
 	exists := a.db.IsUserExists(r.Context(), userData)
 	if exists {
 		response.Error(w, http.StatusConflict, "Conflict", "User already exists")
@@ -100,7 +104,13 @@ func (a *AuthHandlers) EmailSignup(w http.ResponseWriter, r *http.Request) {
 		a.logger.Debugf("EmailSignup: Failed to save image: %v", err)
 		return
 	}
-	err = a.db.CreateUserProfileImage(r.Context(), dbusers.NewUserWithImagePath(userData.ID, imagePath))
+	err = a.db.CreateUserProfileImage(
+		r.Context(),
+		dbusers.NewUser(
+			dbusers.WithID(userData.ID),
+			dbusers.WithImagePath(imagePath),
+		),
+	)
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, "Server error", "Cannot save user profile image path")
 		a.logger.Debugf("EmailSignup: Failed to save user profile image path: %v", err)
@@ -154,7 +164,7 @@ func (a *AuthHandlers) EmailLogin(w http.ResponseWriter, r *http.Request) {
 
 	user.Email = strings.ToLower(user.Email)
 
-	userData, err := a.db.GetUserByEmail(r.Context(), dbusers.NewUserWithEmail(user.Email))
+	userData, err := a.db.GetUserByEmail(r.Context(), dbusers.NewUser(dbusers.WithEmail(user.Email)))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			response.Error(w, http.StatusUnauthorized, "Unauthorized", "Invalid email or password")
@@ -190,7 +200,11 @@ func (a *AuthHandlers) EmailLogin(w http.ResponseWriter, r *http.Request) {
 		a.logger.Debugf("EmailLogin: Failed to generate refresh token: %v", err)
 		return
 	}
-	tokenData := dbtokens.NewToken(refreshToken, userData.ID, time.Now().Add(time.Hour*30*24))
+	tokenData := dbtokens.NewToken(
+		dbtokens.WithToken(refreshToken),
+		dbtokens.WithUserID(userData.ID),
+		dbtokens.WithExpiresAt(time.Now().Add(time.Hour*30*24)),
+	)
 	err = a.db.CreateToken(r.Context(), tokenData)
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, "Server error", "Cannot create access token")

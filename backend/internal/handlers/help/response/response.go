@@ -51,6 +51,13 @@ type ItemResponse struct {
 	Status      string    `json:"status"`
 }
 
+type ImageIDResponse struct {
+	ID   uuid.UUID `json:"id"`
+	Path string    `json:"path"`
+	Type string    `json:"type"`
+	Size int64     `json:"size"`
+}
+
 func ImageResponse(w http.ResponseWriter, code int, image []byte) {
 	w.Header().Set("Content-Type", http.DetectContentType(image))
 	w.WriteHeader(code)

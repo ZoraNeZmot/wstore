@@ -21,6 +21,17 @@ definitions:
       success:
         type: boolean
     type: object
+  response.ImageIDResponse:
+    properties:
+      id:
+        type: string
+      path:
+        type: string
+      size:
+        type: integer
+      type:
+        type: string
+    type: object
   response.ItemDTO:
     properties:
       data:
@@ -301,6 +312,72 @@ paths:
       summary: Get item
       tags:
       - sales
+  /sales/items/images/{id}:
+    post:
+      description: Create item image for item by ID
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Image
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Image ID
+          schema:
+            $ref: '#/definitions/response.ImageIDResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
+        "500":
+          description: Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
+      security:
+      - Bearer: []
+      summary: Create item image
+      tags:
+      - sales
+  /sales/items/search:
+    get:
+      description: Get items by search
+      parameters:
+      - description: Query
+        in: query
+        name: query
+        required: true
+        type: string
+      - default: 10
+        description: Amount of items to return
+        in: query
+        name: amount
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Items list
+          schema:
+            $ref: '#/definitions/response.ItemsListDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
+        "500":
+          description: Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorDTO'
+      summary: Get items by search
+      tags:
+      - sales
   /service/authtest:
     get:
       description: Test if the user is authorized
@@ -356,7 +433,7 @@ paths:
       summary: Get user
       tags:
       - user
-  /user/profile-image/{id}:
+  /user/images/{id}:
     get:
       consumes:
       - application/json

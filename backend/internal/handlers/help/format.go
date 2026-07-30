@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+	tokenpkg "wstore/pkg/token"
 
 	"github.com/google/uuid"
 )
@@ -49,6 +50,14 @@ func GetIntFromQuery(r *http.Request, key string, defaultvalue ...int) (int, err
 	return intValue, nil
 }
 
+func GetStringFromPath(r *http.Request, key string) (string, error) {
+	value := r.PathValue(key)
+	if value == "" {
+		return "", fmt.Errorf("empty path value: %s", key)
+	}
+	return value, nil
+}
+
 func GetStringFromQuery(r *http.Request, key string, defaultvalue ...string) (string, error) {
 	value := r.URL.Query().Get(key)
 	if value == "" {
@@ -74,4 +83,12 @@ func GetUUIDFromQuery(r *http.Request, key string) (uuid.UUID, error) {
 		return uuid.Nil, fmt.Errorf("empty query value: %s", key)
 	}
 	return uuid.Parse(value)
+}
+
+func GetClaimsFromContext(r *http.Request) (*tokenpkg.TokenClaims, error) {
+	claims, ok := r.Context().Value(tokenpkg.ClaimsKey).(*tokenpkg.TokenClaims)
+	if !ok {
+		return nil, fmt.Errorf("failed to get claims from context")
+	}
+	return claims, nil
 }
